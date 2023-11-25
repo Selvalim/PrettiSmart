@@ -1,0 +1,488 @@
+{
+  "[0, 98, 348, 361, 659, 106, 107]": {
+    "read": [
+      ["READ", 348, 17, 354, "CALLVALUE"],
+      ["READ", 361, 26, 365, "STORAGE_0[3]"],
+      ["READ", 659, 36, 662, "CALLER"],
+      ["READ", 659, 41, 668, "STORAGE_0[3]"],
+      ["READ", 659, 72, 706, [3, 0, 1]],
+      ["READ", 659, 88, 762, "CALLVALUE"],
+      ["READ", 659, 91, 767, "CALLER"],
+      ["READ", 659, 111, 830, "CALLVALUE"],
+      ["READ", 659, 116, 836, "STORAGE_0[0]"]
+    ],
+    "write": [
+      ["WRITE", 659, 45, 672, "variable", 3, "1+STORAGE_0[3]", "update"],
+      ["WRITE", 659, 85, 759, "array", 3, "CALLER"],
+      ["WRITE", 659, 109, 828, "mapping", 1, 0, "CALLVALUE_0"],
+      [
+        "WRITE",
+        659,
+        123,
+        843,
+        "variable",
+        0,
+        "STORAGE_0[0]+CALLVALUE_0",
+        "update"
+      ]
+    ],
+    "constain": [["CONS", 659, 34, 659, true, "STORAGE_0[3]==0"]],
+    "pay": [],
+    "sortedActions": [
+      ["READ", 348, 17, 354, "CALLVALUE"],
+      ["READ", 361, 26, 365, "STORAGE_0[3]"],
+      ["CONS", 659, 34, 659, true, "STORAGE_0[3]==0"],
+      ["READ", 659, 36, 662, "CALLER"],
+      ["READ", 659, 41, 668, "STORAGE_0[3]"],
+      ["WRITE", 659, 45, 672, "variable", 3, "1+STORAGE_0[3]", "update"],
+      ["READ", 659, 72, 706, [3, 0, 1]],
+      ["WRITE", 659, 85, 759, "array", 3, "CALLER"],
+      ["READ", 659, 88, 762, "CALLVALUE"],
+      ["READ", 659, 91, 767, "CALLER"],
+      ["WRITE", 659, 109, 828, "mapping", 1, 0, "CALLVALUE_0"],
+      ["READ", 659, 111, 830, "CALLVALUE"],
+      ["READ", 659, 116, 836, "STORAGE_0[0]"],
+      [
+        "WRITE",
+        659,
+        123,
+        843,
+        "variable",
+        0,
+        "STORAGE_0[0]+CALLVALUE_0",
+        "update"
+      ]
+    ],
+    "loop": []
+  },
+  "[0, 98, 348, 361, 375, 396, 509, 532, 361, 375, 396, 509, 532, 361, 659, 106, 107]": {
+    "read": [
+      ["READ", 348, 17, 354, "CALLVALUE"],
+      ["READ", 361, 26, 365, "STORAGE_1[3]"],
+      ["READ", 375, 35, 377, "STORAGE_1[0]"],
+      ["READ", 375, 41, 386, "STORAGE_1[3]"],
+      ["READ", 396, 58, 410, "STORAGE_1[3-0]"],
+      ["READ", 396, 81, 498, "STORAGE_1[1-0]"],
+      ["READ", 509, 99, 522, "STORAGE_1[3]"],
+      ["READ", 532, 116, 546, "STORAGE_1[3-0]"],
+      ["READ", 532, 142, 638, "STORAGE_1[2-0]"],
+      ["READ", 361, 163, 365, "STORAGE_1[3]"],
+      ["READ", 375, 172, 377, "STORAGE_1[0]"],
+      ["READ", 375, 178, 386, "STORAGE_1[3]"],
+      ["READ", 396, 195, 410, "STORAGE_1[3-1]"],
+      ["READ", 396, 218, 498, "STORAGE_1[1-0]"],
+      ["READ", 509, 236, 522, "STORAGE_1[3]"],
+      ["READ", 532, 253, 546, "STORAGE_1[3-1]"],
+      ["READ", 532, 279, 638, "STORAGE_1[2-0]"],
+      ["READ", 361, 300, 365, "STORAGE_1[3]"],
+      ["READ", 659, 310, 662, "CALLER"],
+      ["READ", 659, 315, 668, "STORAGE_1[3]"],
+      ["READ", 659, 346, 706, [3, 0, 1]],
+      ["READ", 659, 362, 762, "CALLVALUE"],
+      ["READ", 659, 365, 767, "CALLER"],
+      ["READ", 659, 385, 830, "CALLVALUE"],
+      ["READ", 659, 390, 836, "STORAGE_1[0]"]
+    ],
+    "write": [
+      [
+        "WRITE",
+        532,
+        149,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_1[2-0]+If(STORAGE_1[0]==0,0,bvudiv_i(CALLVALUE_1*STORAGE_1[1-0],STORAGE_1[0]))",
+        "update"
+      ],
+      [
+        "WRITE",
+        532,
+        286,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_1[2-0]+If(STORAGE_1[0]==0,0,bvudiv_i(CALLVALUE_1*STORAGE_1[1-0],STORAGE_1[0]))",
+        "update"
+      ],
+      ["WRITE", 659, 319, 672, "variable", 3, "1+STORAGE_1[3]", "update"],
+      ["WRITE", 659, 359, 759, "array", 3, "CALLER"],
+      ["WRITE", 659, 383, 828, "mapping", 1, 0, "CALLVALUE_1"],
+      [
+        "WRITE",
+        659,
+        397,
+        843,
+        "variable",
+        0,
+        "STORAGE_1[0]+CALLVALUE_1",
+        "update"
+      ]
+    ],
+    "constain": [
+      ["CONS", 375, 47, 394, false, "STORAGE_1[3]==0"],
+      ["CONS", 396, 48, 396, false, "STORAGE_1[3]==0"],
+      ["CONS", 509, 89, 509, false, "STORAGE_1[0]==0"],
+      ["CONS", 532, 106, 532, false, "STORAGE_1[3]==0"],
+      ["CONS", 375, 184, 394, false, "STORAGE_1[3]==0"],
+      ["CONS", 396, 185, 396, false, "STORAGE_1[3]==0"],
+      ["CONS", 509, 226, 509, false, "STORAGE_1[0]==0"],
+      ["CONS", 532, 243, 532, false, "STORAGE_1[3]==0"],
+      ["CONS", 659, 308, 659, true, "ULE(STORAGE_1[3],2))"]
+    ],
+    "pay": [],
+    "sortedActions": [
+      ["READ", 348, 17, 354, "CALLVALUE"],
+      ["READ", 361, 26, 365, "STORAGE_1[3]"],
+      ["READ", 375, 35, 377, "STORAGE_1[0]"],
+      ["READ", 375, 41, 386, "STORAGE_1[3]"],
+      ["CONS", 375, 47, 394, false, "STORAGE_1[3]==0"],
+      ["CONS", 396, 48, 396, false, "STORAGE_1[3]==0"],
+      ["READ", 396, 58, 410, "STORAGE_1[3-0]"],
+      ["READ", 396, 81, 498, "STORAGE_1[1-0]"],
+      ["CONS", 509, 89, 509, false, "STORAGE_1[0]==0"],
+      ["READ", 509, 99, 522, "STORAGE_1[3]"],
+      ["CONS", 532, 106, 532, false, "STORAGE_1[3]==0"],
+      ["READ", 532, 116, 546, "STORAGE_1[3-0]"],
+      ["READ", 532, 142, 638, "STORAGE_1[2-0]"],
+      [
+        "WRITE",
+        532,
+        149,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_1[2-0]+If(STORAGE_1[0]==0,0,bvudiv_i(CALLVALUE_1*STORAGE_1[1-0],STORAGE_1[0]))",
+        "update"
+      ],
+      ["READ", 361, 163, 365, "STORAGE_1[3]"],
+      ["READ", 375, 172, 377, "STORAGE_1[0]"],
+      ["READ", 375, 178, 386, "STORAGE_1[3]"],
+      ["CONS", 375, 184, 394, false, "STORAGE_1[3]==0"],
+      ["CONS", 396, 185, 396, false, "STORAGE_1[3]==0"],
+      ["READ", 396, 195, 410, "STORAGE_1[3-1]"],
+      ["READ", 396, 218, 498, "STORAGE_1[1-0]"],
+      ["CONS", 509, 226, 509, false, "STORAGE_1[0]==0"],
+      ["READ", 509, 236, 522, "STORAGE_1[3]"],
+      ["CONS", 532, 243, 532, false, "STORAGE_1[3]==0"],
+      ["READ", 532, 253, 546, "STORAGE_1[3-1]"],
+      ["READ", 532, 279, 638, "STORAGE_1[2-0]"],
+      [
+        "WRITE",
+        532,
+        286,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_1[2-0]+If(STORAGE_1[0]==0,0,bvudiv_i(CALLVALUE_1*STORAGE_1[1-0],STORAGE_1[0]))",
+        "update"
+      ],
+      ["READ", 361, 300, 365, "STORAGE_1[3]"],
+      ["CONS", 659, 308, 659, true, "ULE(STORAGE_1[3],2))"],
+      ["READ", 659, 310, 662, "CALLER"],
+      ["READ", 659, 315, 668, "STORAGE_1[3]"],
+      ["WRITE", 659, 319, 672, "variable", 3, "1+STORAGE_1[3]", "update"],
+      ["READ", 659, 346, 706, [3, 0, 1]],
+      ["WRITE", 659, 359, 759, "array", 3, "CALLER"],
+      ["READ", 659, 362, 762, "CALLVALUE"],
+      ["READ", 659, 365, 767, "CALLER"],
+      ["WRITE", 659, 383, 828, "mapping", 1, 0, "CALLVALUE_1"],
+      ["READ", 659, 385, 830, "CALLVALUE"],
+      ["READ", 659, 390, 836, "STORAGE_1[0]"],
+      [
+        "WRITE",
+        659,
+        397,
+        843,
+        "variable",
+        0,
+        "STORAGE_1[0]+CALLVALUE_1",
+        "update"
+      ]
+    ],
+    "loop": [361]
+  },
+  "[0, 13, 108, 120, 849, 129, 150]": {
+    "read": [
+      ["READ", 108, 22, 109, "CALLVALUE"],
+      ["READ", 849, 34, 852, "STORAGE_2[0]"]
+    ],
+    "write": [],
+    "constain": [["CONS", 120, 27, 120, true, "CALLVALUE_2==0"]],
+    "pay": [],
+    "sortedActions": [
+      ["READ", 108, 22, 109, "CALLVALUE"],
+      ["CONS", 120, 27, 120, true, "CALLVALUE_2==0"],
+      ["READ", 849, 34, 852, "STORAGE_2[0]"]
+    ],
+    "loop": []
+  },
+  "[0, 13, 65, 76, 87, 98, 348, 361, 659, 106, 107]": {
+    "read": [
+      ["READ", 348, 44, 354, "CALLVALUE"],
+      ["READ", 361, 53, 365, "STORAGE_3[3]"],
+      ["READ", 659, 63, 662, "CALLER"],
+      ["READ", 659, 68, 668, "STORAGE_3[3]"],
+      ["READ", 659, 99, 706, [3, 0, 1]],
+      ["READ", 659, 115, 762, "CALLVALUE"],
+      ["READ", 659, 118, 767, "CALLER"],
+      ["READ", 659, 138, 830, "CALLVALUE"],
+      ["READ", 659, 143, 836, "STORAGE_3[0]"]
+    ],
+    "write": [
+      ["WRITE", 659, 72, 672, "variable", 3, "1+STORAGE_3[3]", "update"],
+      ["WRITE", 659, 112, 759, "array", 3, "CALLER"],
+      ["WRITE", 659, 136, 828, "mapping", 1, 0, "CALLVALUE_3"],
+      [
+        "WRITE",
+        659,
+        150,
+        843,
+        "variable",
+        0,
+        "STORAGE_3[0]+CALLVALUE_3",
+        "update"
+      ]
+    ],
+    "constain": [["CONS", 659, 61, 659, true, "STORAGE_3[3]==0"]],
+    "pay": [],
+    "sortedActions": [
+      ["READ", 348, 44, 354, "CALLVALUE"],
+      ["READ", 361, 53, 365, "STORAGE_3[3]"],
+      ["CONS", 659, 61, 659, true, "STORAGE_3[3]==0"],
+      ["READ", 659, 63, 662, "CALLER"],
+      ["READ", 659, 68, 668, "STORAGE_3[3]"],
+      ["WRITE", 659, 72, 672, "variable", 3, "1+STORAGE_3[3]", "update"],
+      ["READ", 659, 99, 706, [3, 0, 1]],
+      ["WRITE", 659, 112, 759, "array", 3, "CALLER"],
+      ["READ", 659, 115, 762, "CALLVALUE"],
+      ["READ", 659, 118, 767, "CALLER"],
+      ["WRITE", 659, 136, 828, "mapping", 1, 0, "CALLVALUE_3"],
+      ["READ", 659, 138, 830, "CALLVALUE"],
+      ["READ", 659, 143, 836, "STORAGE_3[0]"],
+      [
+        "WRITE",
+        659,
+        150,
+        843,
+        "variable",
+        0,
+        "STORAGE_3[0]+CALLVALUE_3",
+        "update"
+      ]
+    ],
+    "loop": []
+  },
+  "[0, 13, 65, 76, 87, 98, 348, 361, 375, 396, 509, 532, 361, 375, 396, 509, 532, 361, 659, 106, 107]": {
+    "read": [
+      ["READ", 348, 44, 354, "CALLVALUE"],
+      ["READ", 361, 53, 365, "STORAGE_4[3]"],
+      ["READ", 375, 62, 377, "STORAGE_4[0]"],
+      ["READ", 375, 68, 386, "STORAGE_4[3]"],
+      ["READ", 396, 85, 410, "STORAGE_4[3-0]"],
+      ["READ", 396, 108, 498, "STORAGE_4[1-0]"],
+      ["READ", 509, 126, 522, "STORAGE_4[3]"],
+      ["READ", 532, 143, 546, "STORAGE_4[3-0]"],
+      ["READ", 532, 169, 638, "STORAGE_4[2-0]"],
+      ["READ", 361, 190, 365, "STORAGE_4[3]"],
+      ["READ", 375, 199, 377, "STORAGE_4[0]"],
+      ["READ", 375, 205, 386, "STORAGE_4[3]"],
+      ["READ", 396, 222, 410, "STORAGE_4[3-1]"],
+      ["READ", 396, 245, 498, "STORAGE_4[1-0]"],
+      ["READ", 509, 263, 522, "STORAGE_4[3]"],
+      ["READ", 532, 280, 546, "STORAGE_4[3-1]"],
+      ["READ", 532, 306, 638, "STORAGE_4[2-0]"],
+      ["READ", 361, 327, 365, "STORAGE_4[3]"],
+      ["READ", 659, 337, 662, "CALLER"],
+      ["READ", 659, 342, 668, "STORAGE_4[3]"],
+      ["READ", 659, 373, 706, [3, 0, 1]],
+      ["READ", 659, 389, 762, "CALLVALUE"],
+      ["READ", 659, 392, 767, "CALLER"],
+      ["READ", 659, 412, 830, "CALLVALUE"],
+      ["READ", 659, 417, 836, "STORAGE_4[0]"]
+    ],
+    "write": [
+      [
+        "WRITE",
+        532,
+        176,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_4[2-0]+If(STORAGE_4[0]==0,0,bvudiv_i(CALLVALUE_4*STORAGE_4[1-0],STORAGE_4[0]))",
+        "update"
+      ],
+      [
+        "WRITE",
+        532,
+        313,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_4[2-0]+If(STORAGE_4[0]==0,0,bvudiv_i(CALLVALUE_4*STORAGE_4[1-0],STORAGE_4[0]))",
+        "update"
+      ],
+      ["WRITE", 659, 346, 672, "variable", 3, "1+STORAGE_4[3]", "update"],
+      ["WRITE", 659, 386, 759, "array", 3, "CALLER"],
+      ["WRITE", 659, 410, 828, "mapping", 1, 0, "CALLVALUE_4"],
+      [
+        "WRITE",
+        659,
+        424,
+        843,
+        "variable",
+        0,
+        "STORAGE_4[0]+CALLVALUE_4",
+        "update"
+      ]
+    ],
+    "constain": [
+      ["CONS", 375, 74, 394, false, "STORAGE_4[3]==0"],
+      ["CONS", 396, 75, 396, false, "STORAGE_4[3]==0"],
+      ["CONS", 509, 116, 509, false, "STORAGE_4[0]==0"],
+      ["CONS", 532, 133, 532, false, "STORAGE_4[3]==0"],
+      ["CONS", 375, 211, 394, false, "STORAGE_4[3]==0"],
+      ["CONS", 396, 212, 396, false, "STORAGE_4[3]==0"],
+      ["CONS", 509, 253, 509, false, "STORAGE_4[0]==0"],
+      ["CONS", 532, 270, 532, false, "STORAGE_4[3]==0"],
+      ["CONS", 659, 335, 659, true, "ULE(STORAGE_4[3],2))"]
+    ],
+    "pay": [],
+    "sortedActions": [
+      ["READ", 348, 44, 354, "CALLVALUE"],
+      ["READ", 361, 53, 365, "STORAGE_4[3]"],
+      ["READ", 375, 62, 377, "STORAGE_4[0]"],
+      ["READ", 375, 68, 386, "STORAGE_4[3]"],
+      ["CONS", 375, 74, 394, false, "STORAGE_4[3]==0"],
+      ["CONS", 396, 75, 396, false, "STORAGE_4[3]==0"],
+      ["READ", 396, 85, 410, "STORAGE_4[3-0]"],
+      ["READ", 396, 108, 498, "STORAGE_4[1-0]"],
+      ["CONS", 509, 116, 509, false, "STORAGE_4[0]==0"],
+      ["READ", 509, 126, 522, "STORAGE_4[3]"],
+      ["CONS", 532, 133, 532, false, "STORAGE_4[3]==0"],
+      ["READ", 532, 143, 546, "STORAGE_4[3-0]"],
+      ["READ", 532, 169, 638, "STORAGE_4[2-0]"],
+      [
+        "WRITE",
+        532,
+        176,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_4[2-0]+If(STORAGE_4[0]==0,0,bvudiv_i(CALLVALUE_4*STORAGE_4[1-0],STORAGE_4[0]))",
+        "update"
+      ],
+      ["READ", 361, 190, 365, "STORAGE_4[3]"],
+      ["READ", 375, 199, 377, "STORAGE_4[0]"],
+      ["READ", 375, 205, 386, "STORAGE_4[3]"],
+      ["CONS", 375, 211, 394, false, "STORAGE_4[3]==0"],
+      ["CONS", 396, 212, 396, false, "STORAGE_4[3]==0"],
+      ["READ", 396, 222, 410, "STORAGE_4[3-1]"],
+      ["READ", 396, 245, 498, "STORAGE_4[1-0]"],
+      ["CONS", 509, 253, 509, false, "STORAGE_4[0]==0"],
+      ["READ", 509, 263, 522, "STORAGE_4[3]"],
+      ["CONS", 532, 270, 532, false, "STORAGE_4[3]==0"],
+      ["READ", 532, 280, 546, "STORAGE_4[3-1]"],
+      ["READ", 532, 306, 638, "STORAGE_4[2-0]"],
+      [
+        "WRITE",
+        532,
+        313,
+        645,
+        "mapping",
+        2,
+        0,
+        "STORAGE_4[2-0]+If(STORAGE_4[0]==0,0,bvudiv_i(CALLVALUE_4*STORAGE_4[1-0],STORAGE_4[0]))",
+        "update"
+      ],
+      ["READ", 361, 327, 365, "STORAGE_4[3]"],
+      ["CONS", 659, 335, 659, true, "ULE(STORAGE_4[3],2))"],
+      ["READ", 659, 337, 662, "CALLER"],
+      ["READ", 659, 342, 668, "STORAGE_4[3]"],
+      ["WRITE", 659, 346, 672, "variable", 3, "1+STORAGE_4[3]", "update"],
+      ["READ", 659, 373, 706, [3, 0, 1]],
+      ["WRITE", 659, 386, 759, "array", 3, "CALLER"],
+      ["READ", 659, 389, 762, "CALLVALUE"],
+      ["READ", 659, 392, 767, "CALLER"],
+      ["WRITE", 659, 410, 828, "mapping", 1, 0, "CALLVALUE_4"],
+      ["READ", 659, 412, 830, "CALLVALUE"],
+      ["READ", 659, 417, 836, "STORAGE_4[0]"],
+      [
+        "WRITE",
+        659,
+        424,
+        843,
+        "variable",
+        0,
+        "STORAGE_4[0]+CALLVALUE_4",
+        "update"
+      ]
+    ],
+    "loop": [361]
+  },
+  "[0, 13, 65, 76, 87, 261, 273, 1090, 326, 347]": {
+    "read": [
+      ["READ", 261, 37, 262, "CALLVALUE"],
+      ["READ", 1090, 84, 1111, "STORAGE_5[2-0]"]
+    ],
+    "write": [],
+    "constain": [["CONS", 273, 42, 273, true, "CALLVALUE_5==0"]],
+    "pay": [],
+    "sortedActions": [
+      ["READ", 261, 37, 262, "CALLVALUE"],
+      ["CONS", 273, 42, 273, true, "CALLVALUE_5==0"],
+      ["READ", 1090, 84, 1111, "STORAGE_5[2-0]"]
+    ],
+    "loop": []
+  },
+  "[0, 13, 65, 76, 174, 186, 1066, 239, 260]": {
+    "read": [
+      ["READ", 174, 32, 175, "CALLVALUE"],
+      ["READ", 1066, 79, 1087, "STORAGE_6[1-0]"]
+    ],
+    "write": [],
+    "constain": [["CONS", 186, 37, 186, true, "CALLVALUE_6==0"]],
+    "pay": [],
+    "sortedActions": [
+      ["READ", 174, 32, 175, "CALLVALUE"],
+      ["CONS", 186, 37, 186, true, "CALLVALUE_6==0"],
+      ["READ", 1066, 79, 1087, "STORAGE_6[1-0]"]
+    ],
+    "loop": []
+  },
+  "[0, 13, 65, 151, 163, 855, 1062, 172, 173]": {
+    "read": [
+      ["READ", 151, 27, 152, "CALLVALUE"],
+      ["READ", 855, 41, 862, "CALLER"],
+      ["READ", 855, 57, 921, "STORAGE_7[2-0]"],
+      ["READ", 855, 63, 930, "CALLER"],
+      ["READ", 855, 83, 993, "CALLER"]
+    ],
+    "write": [["WRITE", 855, 81, 991, "mapping", 2, 0, "0"]],
+    "constain": [["CONS", 163, 32, 163, true, "CALLVALUE_7==0"]],
+    "pay": [["PAY", 855, 105, 1040, "CALLER", "STORAGE_7[2-0]", "callback"]],
+    "sortedActions": [
+      ["READ", 151, 27, 152, "CALLVALUE"],
+      ["CONS", 163, 32, 163, true, "CALLVALUE_7==0"],
+      ["READ", 855, 41, 862, "CALLER"],
+      ["READ", 855, 57, 921, "STORAGE_7[2-0]"],
+      ["READ", 855, 63, 930, "CALLER"],
+      ["WRITE", 855, 81, 991, "mapping", 2, 0, "0"],
+      ["READ", 855, 83, 993, "CALLER"],
+      ["PAY", 855, 105, 1040, "CALLER", "STORAGE_7[2-0]", "callback"]
+    ],
+    "loop": []
+  },
+  "storage": {
+    "3": ["array", 1],
+    "1": ["mapping", 0],
+    "0": ["variable"],
+    "2": ["mapping", 0]
+  }
+}
