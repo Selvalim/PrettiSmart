@@ -9,6 +9,8 @@
         <div class="tooltip_path" style="position:absolute;z-index:2">
                <p>111</p>
         </div>  
+        <div class="diff" style="position:absolute;z-index:2">
+        </div>  
     </div>
 </template>
 
@@ -28,10 +30,10 @@ export default {
             svgWidth:'0',
             margin:{top:20,bottom:0,left:0,right:5},
             actSize:{
-                'READ':3,
+                'READ':4,
                 'WRITE':4,
-                'PAY':5,
-                'CONS':3,
+                'PAY':4,
+                'CONS':4,
                 'LINE':1,
                 'STROKE':1.5,
                 'SLOT': 20
@@ -45,7 +47,7 @@ export default {
                 'STROKE':1.5,
                 'SLOT': 15,
                 'GAP':1,
-                'TEXT':8,
+                'TEXT':7,
             },
             label_idx:{
                 'WriteCaller':0,
@@ -65,18 +67,23 @@ export default {
             storage:{},
             caller_slot:[],
             pay_slot:[],
-            lil_height:0,
+            lil_height:1.5,
+            legend_check:false,
         }
     },
     computed:{
     },
     watch:{
         selected_group_paths:function(newVal, oldVal){
-            if(newVal != oldVal){
+            // if(newVal != oldVal){
                 this.drawInit()
-                console.log(newVal)
-            }
-        }
+            // }
+        },
+        // select_actions:function(newVal, oldVal){
+        //     if(newVal != oldVal){
+        //         this.drawInit()
+        //     }
+        // }
     },
     methods:{
         reset_view(){
@@ -108,14 +115,269 @@ export default {
             let filter_height = height/2.5
             this.drawFilter2(svg,that.margin.left,that.margin.left+filter_width,filter_height,filter_width)
             // this.drawPaths(svg,data,that,width,height,that.margin.top+filter_height)
-            console.log(that.selected_group_loc)
+            // console.log(that.selected_group_loc)
             this.right_start = that.margin.left+filter_width
-            d3.select('g.brush_G').remove()
+            d3.selectAll('g.brush_G').remove()
             d3.selectAll('svg.sub-svg').remove()
             if(this.selected_group_paths.length>0){
                 this.drawInsertView()
                 this.drawBrushBar(svg)
             }
+            if(!this.legend_check){
+                this.drawlegend(svg,filter_height+that.margin.top)
+                this.legend_check = true
+            }
+        },
+        drawlegend(svg,y1){
+            d3.select('g.legend').remove()
+            let that = this
+            let left = that.margin.left + that.actSize['PAY']
+            let legend_G = svg.append('g').classed('legend',true)
+            let gap = 8
+            let font_size = 10
+            let y_cursor = 0
+            y_cursor += y1 + gap*1.5
+            legend_G.append('text')
+                        .attr('x',left).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size+1)
+                .text('ACTIONS:')
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                .attr('x',left+that.actSizeD['PAY']*9).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size)
+                .text('Write Information (Update)')
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']).attr('fill',that.actColor['WRITE'])
+            that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['WRITE'])
+            that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*7,y_cursor,['WRITE','update'])
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                .attr('x',left+that.actSizeD['PAY']*9).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size)
+                .text('Invoke Payment (Payback)')
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['PAY']).attr('fill',that.actColor['PAY'])
+            that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['PAY'])
+            that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*7,y_cursor,['PAY','callback'])
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size)
+                .text('Check Constraint')
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['CONS']).attr('fill',that.actColor['CONS'])
+            that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['CONS'])
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                        .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size)
+                .text('Read Information')
+            legend_G.append('circle')   
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['READ']).attr('fill',that.actColor['READ'])
+            that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['READ'])
+
+            //HIGGLIGHT FEATURE
+            y_cursor += font_size + gap*1.5
+            legend_G.append('text')
+                        .attr('x',left).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size+1)
+                .text('HIGHLIGHT FEATURES:')
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size)
+                .text('Write CALLER')
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']+2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']).attr('fill',that.actColor['WRITE'])
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size)
+                .text('Invoke Payment')
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']+2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['PAY']).attr('fill',that.actColor['PAY'])
+            //loop 
+            y_cursor += font_size + gap*1.5
+            legend_G.append('text')
+                .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size)
+                .text('Loop Path')
+            let l_height = (font_size + gap)*0.6
+            let d1 = `M${left} ${y_cursor+0.4*l_height} v${-0.8*l_height}
+            Q${left} ${y_cursor-0.5*l_height}, ${left+0.2*l_height} ${y_cursor-0.5*l_height}
+            h${that.actSizeD['PAY']*4} l${-0.3*l_height} ${-0.3*l_height}`
+            legend_G.append("path")
+                            .attr("fill", "none")
+                            .attr("stroke", '#9b8ea9')
+                            .attr("stroke-width", 1.5)
+                            .attr("d", d1)
+            let d2 = `M${left+0.2*l_height+that.actSizeD['PAY']*4} ${y_cursor-0.3*l_height} v${0.8*l_height}
+            Q${left+0.2*l_height+that.actSizeD['PAY']*4} ${y_cursor+0.5*l_height}, ${left+that.actSizeD['PAY']*4} ${y_cursor+0.5*l_height}
+            h${-that.actSizeD['PAY']*4} l${0.3*l_height} ${+0.3*l_height}`
+            legend_G.append("path")
+                            .attr("fill", "none")
+                            .attr("stroke", '#9b8ea9')
+                            .attr("stroke-width", 1.5)
+                            .attr("d", d2)
+            //pay to previous investor
+            y_cursor += font_size + gap*2
+            legend_G.append('text')
+                .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size)
+                .text('Pay to previous investors')
+            let r2 = that.actSize['WRITE']+2
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',r2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']).attr('fill',that.actColor['WRITE'])
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',r2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
+            legend_G.append('circle')
+                .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',that.actSize['PAY']).attr('fill',that.actColor['PAY'])
+            let p2i_d = `M${left+that.actSizeD['PAY']} ${y_cursor-r2} v${-0.8*gap} h${that.actSizeD['PAY']*3} v${0.8*gap}`
+            legend_G.append("path")
+                            .attr("fill", "none")
+                            .attr("stroke", 'black')
+                            .attr("stroke-width", 1)
+                            .attr("d", p2i_d)
+            // actions
+            // y_cursor += font_size + gap*1.5
+            // legend_G.append('text')
+            //             .attr('x',left).attr('y',y_cursor+1)
+            //             .attr('text-anchor','start').attr('dominant-baseline','middle')
+            //             .attr('font-family','Arial').attr('font-weight','bold')
+            //             .attr('font-size',font_size+1)
+            //     .text('ACTIONS (DETAIL):')
+            // y_cursor += font_size + gap
+            // legend_G.append('text')
+            //             .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
+            //             .attr('text-anchor','start').attr('dominant-baseline','middle')
+            //             .attr('font-family','Arial').attr('font-weight','bold')
+            //             .attr('font-size',font_size)
+            //     .text('Write Information (Update)')
+            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['WRITE'])
+            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['WRITE','update'])
+            // y_cursor += font_size + gap
+            // legend_G.append('text')
+            //     .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
+            //     .attr('text-anchor','start').attr('dominant-baseline','middle')
+            //     .attr('font-family','Arial').attr('font-weight','bold')
+            //     .attr('font-size',font_size)
+            //     .text('Invoke Payment (Pay Back)')
+            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['PAY'])
+            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['PAY','callback'])
+            // y_cursor += font_size + gap
+            // legend_G.append('text')
+            //     .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+            //     .attr('text-anchor','start').attr('dominant-baseline','middle')
+            //     .attr('font-family','Arial').attr('font-weight','bold')
+            //     .attr('font-size',font_size)
+            //     .text('Check Constraint')
+            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['CONS'])
+            // y_cursor += font_size + gap
+            // legend_G.append('text')
+            //             .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+            //             .attr('text-anchor','start').attr('dominant-baseline','middle')
+            //             .attr('font-family','Arial').attr('font-weight','bold')
+            //             .attr('font-size',font_size)
+            //     .text('Read Information')
+            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['READ'])
+
+            //STORAGE
+            let storage_x = left+that.actSizeD['PAY']-that.actSizeD['SLOT']*0.5
+            // storage
+            y_cursor += font_size + gap*2
+            legend_G.append('text')
+                .attr('x',left).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size+1)
+                .text('STORAGE TYPE:')
+
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size)
+                .text('Variable')
+            that.drawSlots(legend_G,storage_x,y_cursor-that.actSizeD['SLOT']*0.5,['variable'],that.lil_height,false)
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size)
+                .text('Array')
+            that.drawSlots(legend_G,storage_x,y_cursor-that.actSizeD['SLOT']*0.5,['array'],that.lil_height,false)
+            y_cursor += font_size + gap 
+            legend_G.append('text')
+                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size)
+                .text('Mapping')
+            that.drawSlots(legend_G,storage_x,y_cursor-that.actSizeD['SLOT']*0.5,['mapping'],that.lil_height,false)
+            //contents
+            let content_x = left+that.actSizeD['PAY']
+            y_cursor += font_size + gap*2
+            legend_G.append('text')
+                .attr('x',left).attr('y',y_cursor+1)
+                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('font-family','Arial').attr('font-weight','bold')
+                .attr('font-size',font_size+1)
+                .text('STORAGE CONTENTS:')
+            y_cursor += font_size + gap 
+            legend_G.append('text')
+                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size)
+                .text('Unrelated')
+            that.drawSlotContents(legend_G,content_x,y_cursor,that.actSizeD['SLOT'],'---')
+            y_cursor += font_size + gap 
+            legend_G.append('text')
+                        .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size)
+                .text('CALLVALUE (Related)')
+            that.drawSlotContents(legend_G,content_x,y_cursor,that.actSize['SLOT'],'CALLVALUE')
+            that.drawSlotContents(legend_G,left+that.actSizeD['PAY']*4,y_cursor,that.actSize['SLOT'],'CALLVALUE---')
+            y_cursor += font_size + gap
+            legend_G.append('text')
+                        .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor)
+                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('font-family','Arial').attr('font-weight','bold')
+                        .attr('font-size',font_size)
+                .text('CALLER (Related)')
+            that.drawSlotContents(legend_G,content_x,y_cursor,that.actSize['SLOT'],'CALLER')
+            that.drawSlotContents(legend_G,left+that.actSizeD['PAY']*4,y_cursor,that.actSize['SLOT'],'CALLERxxx')
+
         },
         drawBrushBar(svg){
             let that = this
@@ -156,7 +418,8 @@ export default {
                     let target = brush_scale(selection[0])
                     if(y_scale(target)!=selection[0]){
                         group_G.call(brush.move,[y_scale(target),y_scale(target+1)])
-                        that.group_brush[group_name] = target
+                        that.group_brush[group_name] = path_list[target]
+                        console.log(target,path_list[target])
                     }
 
                 }
@@ -180,8 +443,14 @@ export default {
                                 .on('brush',brushing)
                 if(group_name in that.group_brush){
                     let target = that.group_brush[group_name]
-                    group_G.call(brush)
-                        .call(brush.move,[y_scale(target),y_scale(target+1)])
+                    let find = path_list.indexOf(target)
+                    if(find>0){
+                        group_G.call(brush)
+                            .call(brush.move,[y_scale(find),y_scale(find+1)])
+                    }else{
+                        group_G.call(brush)
+                        .call(brush.move,[y_scale(0),y_scale(1)])
+                    }
                 }else{
                     group_G.call(brush)
                         .call(brush.move,[y_scale(0),y_scale(1)])
@@ -226,14 +495,17 @@ export default {
 
                 let y_scale = d3.scaleLinear().domain([0,1]).range([0,svg_height])
 
-                console.log(group_name,path_list);
+                // console.log(group_name,path_list);
+                //storage layout
+                let [new_order,max_number] = that.storageLayout(path_list,that.storage,Paths_Data)
+
                 path_list.forEach((pid,p_idx)=>{
                     let data = Paths_Data[pid]
-                    console.log(data)
+                    // console.log(data)
                     //draw the view here
                     let y1 = y_scale(p_idx)
                     let y2 = y_scale(p_idx+1)
-
+                    let shift = [translate_x,start_y,y1]
                     //background
                     let back_gap = 4
                     insert_G.append('rect')
@@ -247,18 +519,405 @@ export default {
 
                     //draw the storage
                     let store_G = insert_G.append('g').classed(`store_G${pid}`,true)
-                    that.drawStorage(store_G,svg_width,svg_height,y1,y2,data,that.storage,that.Action_Loc)
+                    that.drawStorage(store_G,svg_width,svg_height,y1,y2,data,that.storage,that.Action_Loc,new_order,max_number,shift)
 
                     let glyph_G = insert_G.append('g').classed(`glyph_G${pid}`,true)
                     Object.keys(this.Action_Loc).forEach(item=>{
-                        that.drawGlyphs(glyph_G,this.Action_Loc[item].x,this.Action_Loc[item].y,this.Action_Loc[item].act,[translate_x,start_y,y1])
+                        // console.log(this.Action_Loc[item])
+                        if(this.Action_Loc[item].loop == 2){
+                            let compare_G  = glyph_G.append('g')
+                            let act = this.Action_Loc[item].act
+                            let cx = this.Action_Loc[item].x
+                            let cy = this.Action_Loc[item].y
+
+                            let Loop1Action = this.Action_Loc[item].Loop1Action
+                            // console.log(that.LoopDiff(this.Action_Loc[item],Loop1Action))
+                            let diff_res = that.LoopDiff(Loop1Action,this.Action_Loc[item])
+                            if(diff_res[0]){
+                                let path_d = `M${cx} ${cy}, L${Loop1Action.x} ${Loop1Action.y}`
+                                compare_G.append('path')
+                                    .attr('d',path_d).attr('stroke','black')
+                                    .attr('stroke-width',2).attr('fill','none')
+                                compare_G.append('circle')
+                                    .attr('cx',cx).attr('cy',cy).attr('r',that.actSizeD[act[0]]*0.7).attr('fill',that.actColor[act[0]])
+                                    .attr('stroke','black')
+                            }else{
+                                compare_G.append('circle')
+                                    .attr('cx',cx).attr('cy',cy).attr('r',that.actSizeD[act[0]]*0.7).attr('fill',that.actColor[act[0]])
+                            }
+
+
+                            compare_G.on("mouseover",function(_event){
+                                    that.hover_act(_event,act,[cx+shift[0],cy+shift[1]-shift[2]])
+                                }).on("mouseout",function(_event){
+                                    that.out_act()
+                                    that.remove_diff()
+                                }).on('click',function(_event){
+                                    if(diff_res[0]){
+                                        that.show_compare(_event,diff_res[1],[cx+shift[0],cy+shift[1]-shift[2]])
+                                        that.out_act()
+                                    }
+                                })
+                        }
+                    })
+                    Object.keys(this.Action_Loc).forEach(item=>{
+                        // console.log(this.Action_Loc[item])
+                        if(this.Action_Loc[item].loop != 2){
+                            that.drawGlyphs(glyph_G,this.Action_Loc[item].x,this.Action_Loc[item].y,this.Action_Loc[item].act,[translate_x,start_y,y1])
+                        }
                     })
                 })
                 insert_G.attr('transform',`translate(${0},${0})`)
             })
-
         },
-        drawStorage(store_G,svg_width,svg_height,y1,y2,data,storage,Action_Loc){
+        show_compare(_event,diff_res,loc){
+            console.log(diff_res)
+            let res = d3.pointer(_event)
+            d3.select('div.diff').select('p').remove()
+            // let text = [`${diff_res[0]}`]
+            if(diff_res['TYPE']=='READ'){
+                let html =`<span style="color:${this.actColor['READ']};font-size:${'1.5em'}"> <b>READ:</b></span><br>`
+                if(diff_res['VALCHECK']){
+                    let same_val = diff_res['SAMEVAL'][0]
+                    let diff_set1 = diff_res['SAMEVAL'][1]
+                    let diff_set2 = diff_res['SAMEVAL'][2]
+                    let h1 = ''
+                    let h2 = ''
+                    same_val.forEach((str,idx)=>{
+                        if(idx==0){
+                            if(diff_set1[idx].length>0){
+                                h1 += `<span class="difftext"> ${diff_set1[idx]} </span>`
+                            }
+                            if(diff_set2[idx].length>0){
+                                h2 += `<span class="difftext"> ${diff_set2[idx]} </span>`
+                            }
+                        }
+                        h1 += `<span class="sametext"> ${str} </span>`
+                        h2 += `<span class="sametext"> ${str} </span>`
+                        if(diff_set1[idx+1].length>0){
+                            h1 += `<span class="difftext"> ${diff_set1[idx+1]} </span>`
+                        }
+                        if(diff_set2[idx+1].length>0){
+                            h2 += `<span class="difftext"> ${diff_set2[idx+1]} </span>`
+                        }
+                    })
+                    html += `<b><span> VAL1:</span>  ${h1} </b><br>`
+                    html += `<b><span> VAL2:</span>  ${h2} </b><br>`
+                }else{
+                    html += `<span><b> VAL: ${diff_res['VAL1']} </b></span><br>`
+                }
+                d3.select('div.diff').append('p').html(html)
+
+            }else if(diff_res['TYPE']=='WRITE'){ //WIRTE
+                let html =`<span style="color:${this.actColor['WRITE']};font-size:${'1.5em'}"> <b>WRITE:</b></span><br>`
+                if(diff_res['TOCHECK']){
+                    let same_to = diff_res['SAMETO'][0]
+                    let diff_set1 = diff_res['SAMETO'][1]
+                    let diff_set2 = diff_res['SAMETO'][2]
+                    let h1 = ''
+                    let h2 = ''
+                    same_to.forEach((str,idx)=>{
+                        if(idx==0){
+                            if(diff_set1[idx].length>0){
+                                h1 += `<span class="difftext"> ${diff_set1[idx]} </span>`
+                            }
+                            if(diff_set2[idx].length>0){
+                                h2 += `<span class="difftext"> ${diff_set2[idx]} </span>`
+                            }
+                        }
+                        h1 += `<span class="sametext"> ${str} </span>`
+                        h2 += `<span class="sametext"> ${str} </span>`
+                        if(diff_set1[idx+1].length>0){
+                            h1 += `<span class="difftext"> ${diff_set1[idx+1]} </span>`
+                        }
+                        if(diff_set2[idx+1].length>0){
+                            h2 += `<span class="difftext"> ${diff_set2[idx+1]} </span>`
+                        }
+                    })
+                    html += `<b><span> TO1:</span>  ${h1} </b><br>`
+                    html += `<b><span> TO2:</span>  ${h2} </b><br>`
+
+                }else{
+                    html += `<span> <b> TO: ${diff_res['TO1']} </b> </span><br>`
+                }
+                if(diff_res['VALCHECK']){
+                    let same_val = diff_res['SAMEVAL'][0]
+                    let diff_set1 = diff_res['SAMEVAL'][1]
+                    let diff_set2 = diff_res['SAMEVAL'][2]
+                    let h1 = ''
+                    let h2 = ''
+                    same_val.forEach((str,idx)=>{
+                        if(idx==0){
+                            if(diff_set1[idx].length>0){
+                                h1 += `<span class="difftext"> ${diff_set1[idx]} </span>`
+                            }
+                            if(diff_set2[idx].length>0){
+                                h2 += `<span class="difftext"> ${diff_set2[idx]} </span>`
+                            }
+                        }
+                        h1 += `<span class="sametext"> ${str} </span>`
+                        h2 += `<span class="sametext"> ${str} </span>`
+                        if(diff_set1[idx+1].length>0){
+                            h1 += `<span class="difftext"> ${diff_set1[idx+1]} </span>`
+                        }
+                        if(diff_set2[idx+1].length>0){
+                            h2 += `<span class="difftext"> ${diff_set2[idx+1]} </span>`
+                        }
+                    })
+                    html += `<b><span> VAL1:</span>  ${h1} </b><br>`
+                    html += `<b><span> VAL2:</span>  ${h2} </b><br>`
+                }else{
+                    html += `<span><b> VAL: ${diff_res['VAL1']} </b></span><br>`
+                }
+                d3.select('div.diff').append('p').html(html)
+
+            }else if(diff_res['TYPE']=='CONS'){ //CONS
+                let html =`<span style="color:${this.actColor['CONS']};font-size:${'1.5em'}"> <b>CONS:</b></span><br>`
+                if(diff_res['CHECK']){
+                    html += `<b> CHECK1: <span class="difftext"> ${diff_res['CHECK1']} </span> </b><br>`
+                    html += `<b> CHECK2: <span class="difftext"> ${diff_res['CHECK2']} </span></b><br>`
+                }else{
+                    html += `<span> <b> CHECK: ${diff_res['CHECK1']} </b> </span><br>`
+                }
+                if(diff_res['VALCHECK']){
+                    let same_val = diff_res['SAMEVAL'][0]
+                    let diff_set1 = diff_res['SAMEVAL'][1]
+                    let diff_set2 = diff_res['SAMEVAL'][2]
+                    let h1 = ''
+                    let h2 = ''
+                    same_val.forEach((str,idx)=>{
+                        if(idx==0){
+                            if(diff_set1[idx].length>0){
+                                h1 += `<span class="difftext"> ${diff_set1[idx]} </span>`
+                            }
+                            if(diff_set2[idx].length>0){
+                                h2 += `<span class="difftext"> ${diff_set2[idx]} </span>`
+                            }
+                        }
+                        h1 += `<span class="sametext"> ${str} </span>`
+                        h2 += `<span class="sametext"> ${str} </span>`
+                        if(diff_set1[idx+1].length>0){
+                            h1 += `<span class="difftext"> ${diff_set1[idx+1]} </span>`
+                        }
+                        if(diff_set2[idx+1].length>0){
+                            h2 += `<span class="difftext"> ${diff_set2[idx+1]} </span>`
+                        }
+                    })
+                    html += `<b><span> VAL1:</span>  ${h1} </b><br>`
+                    html += `<b><span> VAL2:</span>  ${h2} </b><br>`
+                }else{
+                    html += `<span><b> VAL: ${diff_res['VAL1']} </b></span><br>`
+                }
+                d3.select('div.diff').append('p').html(html)
+
+            }else if(diff_res['TYPE']=='PAY'){ // PAY
+                let html =`<span style="color:${this.actColor['PAY']};font-size:${'1.5em'}"> <b>PAY:</b></span><br>`
+                if(diff_res['TOCHECK']){
+                    let same_to = diff_res['SAMETO'][0]
+                    let diff_set1 = diff_res['SAMETO'][1]
+                    let diff_set2 = diff_res['SAMETO'][2]
+                    let h1 = ''
+                    let h2 = ''
+                    same_to.forEach((str,idx)=>{
+                        if(idx==0){
+                            if(diff_set1[idx].length>0){
+                                h1 += `<span class="difftext"> ${diff_set1[idx]} </span>`
+                            }
+                            if(diff_set2[idx].length>0){
+                                h2 += `<span class="difftext"> ${diff_set2[idx]} </span>`
+                            }
+                        }
+                        h1 += `<span class="sametext"> ${str} </span>`
+                        h2 += `<span class="sametext"> ${str} </span>`
+                        if(diff_set1[idx+1].length>0){
+                            h1 += `<span class="difftext"> ${diff_set1[idx+1]} </span>`
+                        }
+                        if(diff_set2[idx+1].length>0){
+                            h2 += `<span class="difftext"> ${diff_set2[idx+1]} </span>`
+                        }
+                    })
+                    html += `<b><span> TO1:</span>  ${h1} </b><br>`
+                    html += `<b><span> TO2:</span>  ${h2} </b><br>`
+
+                }else{
+                    html += `<span> <b> TO: ${diff_res['TO1']} </b> </span><br>`
+                }
+                if(diff_res['VALCHECK']){
+                    let same_val = diff_res['SAMEVAL'][0]
+                    let diff_set1 = diff_res['SAMEVAL'][1]
+                    let diff_set2 = diff_res['SAMEVAL'][2]
+                    let h1 = ''
+                    let h2 = ''
+                    same_val.forEach((str,idx)=>{
+                        if(idx==0){
+                            if(diff_set1[idx].length>0){
+                                h1 += `<span class="difftext"> ${diff_set1[idx]} </span>`
+                            }
+                            if(diff_set2[idx].length>0){
+                                h2 += `<span class="difftext"> ${diff_set2[idx]} </span>`
+                            }
+                        }
+                        h1 += `<span class="sametext"> ${str} </span>`
+                        h2 += `<span class="sametext"> ${str} </span>`
+                        if(diff_set1[idx+1].length>0){
+                            h1 += `<span class="difftext"> ${diff_set1[idx+1]} </span>`
+                        }
+                        if(diff_set2[idx+1].length>0){
+                            h2 += `<span class="difftext"> ${diff_set2[idx+1]} </span>`
+                        }
+                    })
+                    html += `<b><span> VAL1:</span>  ${h1} </b><br>`
+                    html += `<b><span> VAL2:</span>  ${h2} </b><br>`
+                }else{
+                    html += `<span><b> VAL: ${diff_res['VAL1']} </b></span><br>`
+                }
+                d3.select('div.diff').append('p').html(html)
+            }
+            d3.select('div.diff').attr('style',`transform:translate(${parseInt(loc[0])+20}px,${parseInt(loc[1])-20}px);visibility:visible;z-index:2`)
+        },
+        LoopDiff(action1,action2){
+            // console.log(action1,action2)
+            let diffcheck = false
+            let compare_content = []
+            let act1 = action1['act']
+            let act2 = action2['act']
+            if(act1[0]=='WRITE'){
+                let slot_idx = 5
+                let content_idx1 = act1[4]=='mapping'?7:6
+                let content_idx2 = act2[4]=='mapping'?7:6
+                compare_content = {
+                    'TYPE':'WRITE',
+                    'TOCHECK':false,
+                    'TO1':act1[slot_idx].toString().replaceAll(' ',''),
+                    'TO2':act2[slot_idx].toString().replaceAll(' ',''),
+                    'VALCHECK':false,
+                    'VAL1':act1[content_idx1].toString().replaceAll(' ',''),
+                    'VAL2':act2[content_idx2].toString().replaceAll(' ',''),
+                }
+                if(act1[slot_idx]!=act2[slot_idx]){
+                    diffcheck = true
+                    compare_content['TOCHECK'] = true
+                    let res = this.compareAndFindDifference(act1[slot_idx].toString().replaceAll(' ',''),act2[slot_idx].toString().replaceAll(' ',''))
+                    compare_content['SAMETO'] = res
+                }
+                if(act1[content_idx1]!=act2[content_idx2]){
+                    diffcheck = true
+                    let res = this.compareAndFindDifference(act1[content_idx1].toString().replaceAll(' ',''),act2[content_idx2].toString().replaceAll(' ',''))
+                    compare_content['VALCHECK'] = true
+                    compare_content['SAMEVAL'] = res
+                }
+            }else if(act1[0]=='PAY'){
+                let slot_idx = 4
+                let val_idx = 5
+                compare_content = {
+                    'TYPE':'PAY',
+                    'TOCHECK':false,
+                    'TO1':act1[slot_idx].toString().replaceAll(' ',''),
+                    'TO2':act2[slot_idx].toString().replaceAll(' ',''),
+                    'VALCHECK':false,
+                    'VAL1':act1[val_idx].toString().replaceAll(' ',''),
+                    'VAL2':act2[val_idx].toString().replaceAll(' ',''),
+                }
+
+                if(act1[slot_idx]!=act2[slot_idx]){
+                    diffcheck = true
+                    compare_content['TOCHECK'] = true
+                    let res = this.compareAndFindDifference(act1[slot_idx].toString().replaceAll(' ',''),act2[slot_idx].toString().replaceAll(' ',''))
+                    compare_content['SAMETO'] = res
+                }
+                if(act1[val_idx]!=act2[val_idx]){
+                    diffcheck = true
+                    let res = this.compareAndFindDifference(act1[val_idx].toString().replaceAll(' ',''),act2[val_idx].toString().replaceAll(' ',''))
+                    compare_content['VALCHECK'] = true
+                    compare_content['SAMEVAL'] = res
+                }
+            }else if(act1[0]=='CONS'){
+                let check_idx = 4
+                let content_idx = 5
+                compare_content = {
+                    'TYPE':'CONS',
+                    'CHECK':false,
+                    'CHECK1':act1[check_idx].toString(),
+                    'CHECK2':act2[check_idx].toString(),
+                    'VALCHECK':false,
+                    'VAL1':act1[content_idx].toString().replaceAll(' ',''),
+                    'VAL2':act2[content_idx].toString().replaceAll(' ',''),
+                }
+                if(act1[check_idx]!=act2[check_idx]){
+                    diffcheck = true
+                    compare_content['CHECK'] = true
+                }
+                if(act1[content_idx]!=act2[content_idx]){
+                    diffcheck = true
+                    let res = this.compareAndFindDifference(act1[content_idx].toString().replaceAll(' ',''),act2[content_idx].toString().replaceAll(' ',''))
+                    compare_content['VALCHECK'] = true
+                    compare_content['SAMEVAL'] = res
+                }
+            }else if(act1[0]=='READ'){
+                let content_idx = 4
+                compare_content = {
+                    'TYPE':'READ',
+                    'VALCHECK':false,
+                    'VAL1':act1[content_idx].toString().replaceAll(' ',''),
+                    'VAL2':act2[content_idx].toString().replaceAll(' ',''),
+                }
+                if(act1[content_idx]!=act2[content_idx]){
+                    diffcheck = true
+                    let res = this.compareAndFindDifference(act1[content_idx].toString().replaceAll(' ',''),act2[content_idx].toString().replaceAll(' ',''))
+                    compare_content['VALCHECK'] = true
+                    compare_content['SAMEVAL'] = res
+                }
+            }
+            return [diffcheck,compare_content]
+        },
+        storageLayout(path_list,storage,Paths_Data){
+            // console.log(path_list,storage,this.Action_Loc)
+            let Store_Stat = {}
+            let slots = Object.keys(storage)
+            slots.forEach(item=>{
+                Store_Stat[item] = []
+            })
+            let max_content_number = 0
+            path_list.forEach((pid,p_idx)=>{
+                    let data = Paths_Data[pid]
+                    let actions = data['sorted_actions']
+                    if(data['loop'].length>0){
+                        let none_loop_segments = data['none_loop_segments']
+                        let loop_segments = data['loop_segments']
+                        let whole_actions = none_loop_segments[0][4]
+                        none_loop_segments.forEach((seg,s_idx)=>{
+                            if(s_idx>0){
+                                let loopslices = [...loop_segments].filter(item=>item[0]==s_idx-1)
+                                whole_actions = [...whole_actions,...loopslices[0][4],...loopslices[1][4],...seg[4]]
+                            }
+                        })
+                        actions = whole_actions
+                    }
+                    let Content_Stat = {}
+                    slots.forEach(item=>{
+                        Content_Stat[item] = 0
+                    })
+                    actions.forEach((act,act_idx)=>{
+                        if(act[0]=='WRITE' && slots.includes(act[5].toString())){
+                            Store_Stat[act[5]] = [...Store_Stat[act[5]],act_idx]
+                            Content_Stat[act[5]] = Content_Stat[act[5]] + 1
+                        }
+                    })
+                    // console.log(Content_Stat)
+                    let content_number = Math.max(...Object.values(Content_Stat))
+                    if(content_number>max_content_number){
+                        max_content_number = content_number
+                    }
+            })
+            let new_order = slots.sort((a,b)=>{
+                let a_set =Store_Stat[a]
+                let b_set =Store_Stat[b]
+                return d3.sum(a_set)/a_set.length -  d3.sum(b_set)/b_set.length
+            })
+            // console.log(Store_Stat,new_order)
+            return [new_order,max_content_number]
+        },
+        drawStorage(store_G,svg_width,svg_height,y1,y2,data,storage,Action_Loc,new_order,max_number,shift){
             let that = this
             //sorted_actions
             let sorted_actions = data['sorted_actions']
@@ -270,17 +929,15 @@ export default {
                 none_loop_segments.forEach((seg,seg_idx)=>{
                     if(seg_idx>0){
                         let loops = [...loop_segments].filter(item=>item[0]==seg_idx-1).map(item=>item[4])
-                        console.log(loops)
+                        // console.log(loops)
                         actions = [...actions,...loops[0],...loops[1],...seg[4]]
                     }
                 })      
-                console.log(actions)
                 sorted_actions = actions           
             }
 
 
             let slots = Object.keys(storage)
-            console.log(slots,sorted_actions)
             let strip = svg_height*0.4
             let x_scale = d3.scaleLinear().domain([-1,slots.length]).range([strip, svg_width-strip])
             let lil_height = 0.1*that.actSizeD['SLOT']
@@ -307,16 +964,27 @@ export default {
                     if(act[5] in slots_written){
                         slots_written[act[5]] += 1
                     }else{
-                        slots_written[act[5]] = 1
+                        slots_written[act[5]] = 0
                     }
 
-                    let content_y = storage_y
-                    let content_x = x_scale(parseInt(act[5]))+(slots_written[parseInt(act[5])]+1)*that.actSizeD['SLOT']
+                    let max_r = 0.5 * ( y2 - storage_y - that.actSizeD['SLOT']) / max_number
+                    let slot_idx = slots_written[parseInt(act[5])]
+                    let content_y = storage_y + 1.1*that.actSizeD['SLOT']+ (slot_idx+0.5)* 1.9 * max_r 
+                    let s_idx = new_order.indexOf(act[5].toString())
+                    let content_x = x_scale(s_idx)+0.5*that.actSizeD['SLOT']
 
-                    let path = `M${Action_Loc[idx].x} ${Action_Loc[idx].y+that.actSizeD['WRITE']} V${control_y1}`
-                    let center_x = x_scale(parseInt(act[5]))+0.5*that.actSizeD['SLOT']
-                    let slot_idx = slots_written[act[5]]
-                    path += `C${Action_Loc[idx].x} ${control_y}, ${content_x} ${control_y} ${content_x} ${storage_y}`
+
+                    let path = `M${Action_Loc[idx].x} ${Action_Loc[idx].y} V${control_y1}`
+                    if(content_x>Action_Loc[idx].x){
+                        let line_gap = 10 + 0.5*that.actSizeD['SLOT'] - slot_idx * 2
+                        path += `C${Action_Loc[idx].x} ${control_y}, ${content_x-line_gap} ${control_y} ${content_x-line_gap} ${storage_y}`
+                        path += `V${content_y-10} Q${content_x-line_gap} ${content_y},  ${content_x} ${content_y} `
+                    }else{
+                        let line_gap = 2 + 0.5*that.actSizeD['SLOT'] + slot_idx * 2
+                        path += `C${Action_Loc[idx].x} ${control_y}, ${content_x+line_gap} ${control_y} ${content_x+line_gap} ${storage_y}`
+                        path += `V${content_y-10} Q${content_x+line_gap} ${content_y},  ${content_x} ${content_y} `
+                    }
+
                     let line_color = that.actColor['LINE']
                     let write_content = act[6]
                     if(act[4]=='mapping'){
@@ -329,26 +997,42 @@ export default {
                         .attr('d',path).attr('fill','none').attr("stroke",line_color).attr("stroke-width",1)
                     //draw slot content
 
-                    that.drawSlotContents(store_G,content_x,content_y,0.5*(x_scale(1)-x_scale(0)),write_content)
+                    that.drawSlotContents(store_G,content_x,content_y,max_r,write_content,shift)
                     if(write_content=='CALLER'){
                         that.caller_slot.push(act[5])
                     }
-                }else if(act[0]=='PAY'&&Number.isInteger(act[4])){
-                    let center_x = x_scale(parseInt(act[4]))+0.5*that.actSizeD['SLOT']
-                    let path = `M${Action_Loc[idx].x} ${Action_Loc[idx].y+that.actSizeD['PAY']} V${control_y1} C${Action_Loc[idx].x} ${control_y}, ${center_x} ${control_y}, ${center_x} ${storage_y}`
-                    store_G.append('path').classed('interaction',true)
-                        .attr('d',path).attr('fill','none').attr("stroke",that.actColor['PAY']).attr("stroke-width",1)
-                    that.pay_slot.push(act[4])
+                }else if(act[0]=='PAY'){
+                    if(Number.isInteger(act[4])){
+                        let s_idx = new_order.indexOf(act[4].toString())
+                        let center_x = x_scale(s_idx)+0.5*that.actSizeD['SLOT']
+                        let path = `M${Action_Loc[idx].x} ${Action_Loc[idx].y} V${control_y1} C${Action_Loc[idx].x} ${control_y}, ${center_x} ${control_y}, ${center_x} ${storage_y}`
+                        store_G.append('path').classed('interaction',true)
+                            .attr('d',path).attr('fill','none').attr("stroke",that.actColor['PAY']).attr("stroke-width",1)
+                        that.pay_slot.push(act[4])
+                    }
+                    let p1 =  /\[\d/g
+                    let res = act[5].match(p1)
+                    if(res){
+                        res.forEach(r=>{
+                            let s = parseInt(r[1])
+                            let s_idx = new_order.indexOf(s.toString())
+                            let center_x = x_scale(s_idx)+0.5*that.actSizeD['SLOT']
+                            let path = `M${Action_Loc[idx].x} ${Action_Loc[idx].y} V${control_y1} C${Action_Loc[idx].x} ${control_y}, ${center_x} ${control_y}, ${center_x} ${storage_y}`
+                            store_G.append('path').classed('interaction',true)
+                                .attr('d',path).attr('fill','none').attr("stroke",that.actColor['PAY']).attr("stroke-width",1)
+                                .attr('stroke-dasharray','2,1')
+                        })
+                    }
                 }
             })
             //draw the slot glyphs
             let critical_slots = [...that.caller_slot].filter(item=>[...that.pay_slot].includes(item))
-            console.log(critical_slots,storage_y)
-            slots.forEach(item=>{
+            // console.log(critical_slots,storage_y,new_order)
+            new_order.forEach((item,s_idx)=>{
                 let check = critical_slots.includes(parseInt(item))
-                that.drawSlots(store_G,x_scale(parseInt(item)),storage_y,storage[item],lil_height,check)
+                that.drawSlots(store_G,x_scale(s_idx),storage_y,storage[item],lil_height,check)
                 store_G.append('text')
-                        .attr('x',x_scale(parseInt(item))-3).attr('y',storage_y+0.5*that.actSizeD['SLOT'])
+                        .attr('x',x_scale(s_idx)-15).attr('y',storage_y+0.5*that.actSizeD['SLOT'])
                         .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',10).attr('fill','black')
@@ -356,47 +1040,51 @@ export default {
             })
         },
         drawSlots(svg,x,y,slot_data,lil_height,check){
-            console.log(x,y,slot_data,lil_height,check)
+            // console.log(x,y,slot_data,lil_height,check)
             let that = this
             let width = that.actSizeD['SLOT']
             let slot_G = svg.append('g').classed('storage',true)
             let highlight_color = 'black'
+            let unhilight_color = '#747d8c'
 
             slot_G.append('rect')
                 .attr('x',x).attr('y',y).attr('width',width).attr('height',width)
-                .attr('fill',that.actColor['STORAGE']).attr('stroke',check?highlight_color:that.actColor['LINE']).attr('stroke-width',lil_height)
+                .attr('fill',that.actColor['STORAGE']).attr('stroke',check?highlight_color:unhilight_color).attr('stroke-width',lil_height)
             if(slot_data[0]=='array'){
                 slot_G.append('rect')
                     .attr('x',x).attr('y',y+width*0.25-0.5*lil_height).attr('width',width).attr('height',lil_height)
-                    .attr('fill',check?highlight_color:that.actColor['LINE'])
+                    .attr('fill',check?highlight_color:unhilight_color)
                 slot_G.append('rect')
                     .attr('x',x).attr('y',y+width/2-0.5*lil_height).attr('width',width).attr('height',lil_height)
-                    .attr('fill',check?highlight_color:that.actColor['LINE'])
+                    .attr('fill',check?highlight_color:unhilight_color)
                 slot_G.append('rect')
                     .attr('x',x).attr('y',y+width*0.75-0.5*lil_height).attr('width',width).attr('height',lil_height)
-                    .attr('fill',check?highlight_color:that.actColor['LINE'])
+                    .attr('fill',check?highlight_color:unhilight_color)
             }else if(slot_data[0]=='mapping'){
                 let path1 = `M${x+1.5*lil_height} ${y} h${lil_height} l${lil_height} ${width/2} l${-lil_height} ${width/2} h${-lil_height} l${lil_height} ${-width/2}`
                 let path2 = `M${x+4*lil_height} ${y} h${lil_height} l${lil_height} ${width/2} l${-lil_height} ${width/2} h${-lil_height} l${lil_height} ${-width/2}`
                 let path3 = `M${x+6.5*lil_height} ${y} h${lil_height} l${lil_height} ${width/2} l${-lil_height} ${width/2} h${-lil_height} l${lil_height} ${-width/2}`
                 slot_G.append('path')
-                        .attr('d',path1).attr('fill',check?highlight_color:that.actColor['LINE'])
+                        .attr('d',path1).attr('fill',check?highlight_color:unhilight_color)
                 slot_G.append('path')
-                        .attr('d',path2).attr('fill',check?highlight_color:that.actColor['LINE'])
+                        .attr('d',path2).attr('fill',check?highlight_color:unhilight_color)
                 slot_G.append('path')
-                        .attr('d',path3).attr('fill',check?highlight_color:that.actColor['LINE'])
+                        .attr('d',path3).attr('fill',check?highlight_color:unhilight_color)
             }
         },
-        drawSlotContents(svg,x,y,max_size,content){
+        drawSlotContents(svg,x,y,max_size,content,shift){
+            let that = this
             max_size = Math.min(max_size,0.5*this.actSizeD['SLOT'])
             let r = 0.9*max_size
-            let cy = y+0.5*this.actSizeD['SLOT']
-            svg.append('circle')
-                    .attr('cx',x).attr('cy',cy).attr('r',0.6*r).attr('fill',this.actColor['STORAGE'])
+            let cy = y
+            // svg.append('circle')
+            //         .attr('cx',x).attr('cy',cy).attr('r',0.6*r).attr('fill',this.actColor['STORAGE'])
+            let icon_G = svg.append('g')
             if(content.includes('CALLER')){
-                svg.append('circle')
+                icon_G.classed('caller',true)
+                icon_G.append('circle')
                     .attr('cx',x).attr('cy',cy).attr('r',r).attr('fill',this.actColor['STORAGE'])
-                let icon_G = svg.append('g').classed('caller',true)
+
                 icon_G.append('circle')
                         .attr('cx',x).attr('cy',cy-0.45*r).attr('r',0.3*r).attr('fill','black')
                 icon_G.append('rect')
@@ -408,9 +1096,9 @@ export default {
                     .attr('cx',x).attr('cy',cy).attr('r',r).attr('fill','none').attr('stroke','black').attr('stroke-width',1.5)
                 }
             }else if(content.includes('CALLVALUE')){
-                svg.append('circle')
+                icon_G.classed('callvalue',true)
+                icon_G.append('circle')
                     .attr('cx',x).attr('cy',cy).attr('r',r).attr('fill',this.actColor['STORAGE'])
-                let icon_G = svg.append('g').classed('callvalue',true)
                 icon_G.append('text')
                         .attr('x',x).attr('y',cy+1).attr('fill','black')
                         .attr('text-anchor','middle').attr('dominant-baseline','middle')
@@ -419,16 +1107,23 @@ export default {
                         .text('$')
 
                 if(content=='CALLVALUE'){
-                    svg.append('circle')
+                    icon_G.append('circle')
                     .attr('cx',x).attr('cy',cy).attr('r',r).attr('fill','none').attr('stroke','black').attr('stroke-width',1.5)
                 }
             }else{
-                svg.append('circle')
+                icon_G.append('circle')
                     .attr('cx',x).attr('cy',cy).attr('r',0.7*r).attr('fill',this.actColor['STORAGE'])
             }
+            icon_G.on('mouseover',function(_event){
+                d3.select('div.tooltip_path').select('p').remove()
+                let text = [content]
+                d3.select('div.tooltip_path').append("p").html(text.join("<br>"))
+                d3.select('div.tooltip_path').attr('style',`transform:translate(${x+shift[0]}px,${cy+shift[1]-shift[2]-20}px);visibility:visible;z-index:2`)
+            }).on("mouseout",function(_event){
+                that.out_act()
+            })
         },
         drawActionSeq(svg,pid,data,y1,y2,svg_width){
-            console.log(data)
             //remove g
             d3.select(`g.act_G${pid}`).remove()
             let that = this
@@ -457,7 +1152,8 @@ export default {
                             Action_Loc[cursor] = {
                                 y: path_y,
                                 x: cursor_height + that.actSizeD[act[0]]+ that.actSizeD['STROKE'] + that.actSizeD['GAP'],
-                                act:act
+                                act:act,
+                                loop:0
                             }
                             cursor_height += 2*(that.actSizeD[act[0]]+that.actSizeD['STROKE'] + that.actSizeD['GAP'])
                             cursor += 1
@@ -470,7 +1166,6 @@ export default {
                         // adjust the size of looop
                         let b = sorted_actions.length * 0.04
                         let pathData = that.ArchimedeanSpiral(0,b,0.01,path_y,cursor_height,len)
-                        console.log(pathData,cursor_height)
                         // keep the parameter of spiral
                         loop_range.push([0,b,0.01,path_y,cursor_height,len])
                         cursor_height = pathData[2][1] + that.actSizeD['PAY']
@@ -478,30 +1173,34 @@ export default {
 
                         let round1 = pathData[3][0]
                         let round2 = pathData[3][1]
+                        let round1start = cursor
                         round1.forEach((item,idx)=>{
                             Action_Loc[cursor] = {
                                 x:item[0],
                                 y:item[1],
-                                act:data1[idx]
+                                act:data1[idx],
+                                loop:1
                             }
                             cursor += 1
-
                         })
                         round2.forEach((item,idx)=>{
                             Action_Loc[cursor] = {
                                 x:item[0],
                                 y:item[1],
-                                act:data2[idx]
+                                act:data2[idx],
+                                loop:2,
+                                Loop1idx:round1start+idx
                             }
                             cursor += 1
                         })
                         seg[4].forEach((act)=>{
                             Action_Loc[cursor] = {
                                 y: path_y,
-                                x: cursor_height + that.actSize[act[0]]+ that.actSizeD['STROKE'] + that.actSizeD['GAP'],
-                                act:act
+                                x: cursor_height + that.actSizeD[act[0]]+ that.actSizeD['STROKE'] + that.actSizeD['GAP'],
+                                act:act,
+                                loop:0
                             }
-                            cursor_height += 2*(that.actSize[act[0]]+that.actSizeD['STROKE'] + that.actSizeD['GAP'])
+                            cursor_height += 2*(that.actSizeD[act[0]]+that.actSizeD['STROKE'] + that.actSizeD['GAP'])
                             cursor += 1
                         })
                     }
@@ -511,7 +1210,6 @@ export default {
 
                 let ratio = (x_mapping(1)-x_mapping(0))
                 let line_start = 0
-                console.log(loop_range)
                 loop_range.forEach(item=>{
                     // draw the line
                     act_G.append("line")
@@ -548,7 +1246,11 @@ export default {
                     new_Action_Loc[idx] = {
                         y:new_y,
                         x:x_mapping(action_data.x),
-                        act:action_data.act
+                        act:action_data.act,
+                        loop:action_data.loop
+                    }
+                    if(action_data.loop==2){
+                        new_Action_Loc[idx]['Loop1Action'] = new_Action_Loc[action_data.Loop1idx]
                     }
                 })
                 Action_Loc = new_Action_Loc
@@ -620,13 +1322,16 @@ export default {
         drawGlyphs(svg,cx,cy,act,shift){
             let that = this
             let glyph_G = svg.append('g').classed(`${act[0]}`,true)
-            if(act[act.length-1]=='callback' | act[act.length-1]=='update'){
+            if(act[act.length-1]=='callback' | act[act.length-1]=='update'| (act[0]=='PAY'&&act[4]=='CALLER')){
                 glyph_G.append('circle')
-                    .attr('cx',cx).attr('cy',cy).attr('r',that.actSizeD[act[0]]+that.actSizeD['STROKE']).attr('fill','white')
+                    .attr('cx',cx).attr('cy',cy).attr('r',that.actSizeD[act[0]]).attr('fill','white')
                     .attr('stroke',that.actColor[act[0]]).attr('stroke-width',that.actSizeD['STROKE'])
-            }
-            glyph_G.append('circle')
+                glyph_G.append('circle')
+                    .attr('cx',cx).attr('cy',cy).attr('r',that.actSizeD[act[0]]-that.actSizeD['STROKE']).attr('fill',that.actColor[act[0]])
+            }else{
+                glyph_G.append('circle')
                     .attr('cx',cx).attr('cy',cy).attr('r',that.actSizeD[act[0]]).attr('fill',that.actColor[act[0]])
+            }
             glyph_G.append('text')
                     .attr('x',cx).attr('y',cy+1)
                     .attr('text-anchor','middle').attr('dominant-baseline','middle')
@@ -635,7 +1340,6 @@ export default {
                     .text(`${act[0].slice(0,1)}`)
             glyph_G.on("mouseover",function(_event){
                     that.hover_act(_event,act,[cx+shift[0],cy+shift[1]-shift[2]])
-                    console.log(act)
                 }).on("mouseout",function(_event){
                     that.out_act()
                 })
@@ -643,7 +1347,7 @@ export default {
         },
         dataInit(data){
             let Paths_Data = {}
-            console.log(data)
+            // console.log(data)
             Object.keys(data).forEach((key,idx)=>{
                 if(key!='storage'){
                     let check = true
@@ -669,13 +1373,13 @@ export default {
                     }
                 }else{
                     this.storage = data[key]
-                    console.log(data[key],this.storage)
+                    // console.log(data[key],this.storage)
                 }
             })
-            console.log(Paths_Data)
+            // console.log(Paths_Data)
             let groups = {} // paths_groups
             Object.keys(Paths_Data).forEach(pid=>{
-                console.log(JSON.parse(JSON.stringify(Paths_Data[pid])))
+                // console.log(JSON.parse(JSON.stringify(Paths_Data[pid])))
                 let path = Paths_Data[pid].path
                 let actions = Paths_Data[pid].sorted_actions
                 let loop_point = [...Paths_Data[pid].loop].sort((a,b)=>path.indexOf(parseInt(a))-path.indexOf(parseInt(b)))
@@ -684,7 +1388,7 @@ export default {
 
                 if(loop_point.length>0){//there is a loop
                     let old_loop_point = [...loop_point]
-                    console.log(pid)
+                    // console.log(pid)
                     //check overlap of loop points
                     if(loop_point.length>1){
                         let i = 0
@@ -710,7 +1414,6 @@ export default {
                         Paths_Data[pid]['loop'] = loop_point
                     }
 
-                    console.log(loop_point)
                     
                     // segment the actions
                     let flag = 0
@@ -758,7 +1461,6 @@ export default {
                     let seg = actions.slice(start_idx)
                     none_loop_segments.push(['none',start_idx,actions.length, seg.length, seg])
 
-                    console.log(none_loop_segments,loop_segments)
                     // fix the bug of cut more than 2 loop data
                     for(let i=0;i<none_loop_segments.length-1;i++){
                         let L_data = [...loop_segments].filter(item=>item[0]==i)
@@ -788,7 +1490,6 @@ export default {
                             loop_segments.push(L_data[0])
                         }
                     }
-                    console.log(none_loop_segments,loop_segments)
                     //deal with the different lens of loop
                     let new_loop_segments = []
                     let new_none_loop_segments = []
@@ -880,8 +1581,8 @@ export default {
                 }
             })
             this.groups = groups
-            console.log(Paths_Data)
-            console.log(groups)
+            // console.log(Paths_Data)
+            // console.log(groups)
             //data init end==================================================================
         },
         update_selected_loc(data){
@@ -909,7 +1610,7 @@ export default {
         
             
             let groups = this.groups
-            console.log(groups)
+            // console.log(groups)
             let groups_id = Object.keys(groups)
 
             let sorted_groups_id = [...groups_id].sort((a,b)=>{
@@ -922,7 +1623,7 @@ export default {
                         }
                     }
             })
-            console.log(sorted_groups_id)
+            // console.log(sorted_groups_id)
             let label_len = Object.keys(that.label_idx).length
             let group_len = groups_id.length
             let x_scale = d3.scaleLinear().domain([-0.5,label_len-1]).range([start,end])
@@ -933,7 +1634,7 @@ export default {
             let gap2 = gap1 * 15
             let path_width = 1
 
-            console.log(path_count)
+            // console.log(path_count)
             let total_height = path_count + gap2 + group_len * gap1 * 2
             let y_scale = d3.scaleLinear().domain([0,total_height]).range([that.margin.top+15,that.margin.top+height])
             //unfold
@@ -958,9 +1659,9 @@ export default {
                 let right_part = sorted_groups_id.filter(item=>{
                     return item.split(',').map(item=>parseInt(item))[j] == 0
                 })
-                console.log(left_part,right_part)
+                // console.log(left_part,right_part)
                 left_part.forEach(item=>{
-                    console.log(item)
+                    // console.log(item)
                     let path_num = groups[item].length
                     if(path_num>0){
                         let group_width = path_width*path_num
@@ -1027,7 +1728,7 @@ export default {
                     let y = y_scale(y_cursor)
                     let w = group_width*y_gap
                     if(j>0){
-                        console.log(last_parts[item])
+                        // console.log(last_parts[item])
                         let p_data = last_parts[item]
                         let p_d = `M${p_data[0]} ${p_data[1]+inner_gap} L${x} ${y+inner_gap} v${w-2*inner_gap} L${p_data[0]} ${p_data[1]+p_data[2]} z`
                         let fill_color = that.actColor['L_FILTER']
@@ -1089,7 +1790,7 @@ export default {
 
         },
         drawMergePath2(svg,start_parts,groups,Paths_Data,start,width){
-            console.log(start_parts,groups,Paths_Data)
+            // console.log(start_parts,groups,Paths_Data)
             //remove g
             let that = this
             d3.select('g.overview_G').remove()
@@ -1113,7 +1814,7 @@ export default {
                         }
                     }
                 })
-                console.log(location,paths)
+                // console.log(location,paths)
 
                 let y_scale = d3.scaleLinear().domain([-1,paths.length]).range([location[1],location[1]+location[2]])
                 let y_gap = y_scale(1)-y_scale(0)
@@ -1150,7 +1851,7 @@ export default {
                     })
                     combine_bb_visited.push(bb_visited)
                 })
-                console.log(paths,combine_bb_visited)
+                // console.log(paths,combine_bb_visited)
 
                 // 2. Divide paths into sub-groups that can be merged (rule-based), and generate a longest basic block sequence for layout computing and visualization.
                 let sub_groups = []
@@ -1160,7 +1861,7 @@ export default {
 
                 // for each path in the group
                 combine_bb_visited.forEach((bbs,idx)=>{
-                    console.log(`path:${idx}`,bbs)
+                    // console.log(`path:${idx}`,bbs)
                     //rule 1: with same basic block (intersection > 0)
                     let intersection_list = [...bbs].filter(item=>longest_sequence.includes(item))
                     let check1 = intersection_list.length>0
@@ -1206,7 +1907,7 @@ export default {
                 sub_groups.push([now_group,longest_sequence])
                 // console.log(sub_groups,combine_bb_visited)
 
-                console.log(sub_groups)
+                // console.log(sub_groups)
                 //3. In each sub-group,
                 sub_groups.forEach(item=>{
                     // console.log(item)
@@ -1311,7 +2012,7 @@ export default {
                     //longest sequence for each end----------------------
                     })
 
-                    console.log(final_data) //for sub group
+                    // console.log(final_data) //for sub group
                     // caculate the layout of visualizations
                     let group_len = group_ids.length
                     let y_scale_sub = d3.scaleLinear().domain([0,group_len-1]).range([y_scale(group_ids[0]),y_scale(group_ids[group_len-1])])
@@ -1323,7 +2024,7 @@ export default {
                         last_y_by_pid[item] = y_scale_sub(id)
                         path_set[item] = [[0,y_scale_sub(id)]]
                     })
-                    console.log(last_y_by_pid)
+                    // console.log(last_y_by_pid)
                     let path_width = 0.3 //px
                     let x_cursor = 0 //unit
                     let block_gap = 0.5
@@ -1448,7 +2149,6 @@ export default {
                                             // path_set[pid_in_group] = [...path_set[pid_in_group],[x_cursor+node_gap_2,last_y_by_pid[pid_in_group]]]
                                             last_y_by_pid[pid_in_group] = new_y
                                         })
-                                        console.log(group_by_param[param][0])
                                         node_set.push([x_cursor+node_gap_2/3,y, group_by_param[param][1],group_by_param[param][0]])
                                         // node_set.push([x_cursor+node_gap_2/3,y, group_by_param[param][1]], group_by_param[param][0])
                                     }else{
@@ -1564,15 +2264,26 @@ export default {
                                     .x(d=>d[0])
                                     .y(d=>d[1])
                                     .curve(d3.curveBumpX)
-
+                    //draw path
                     group_ids.forEach(pid_in_group=>{
+                        let selected_path = []
+                        if(that.selected_group_paths.length>0){
+                            // console.log(that.selected_group_paths)
+                            selected_path = [...that.selected_group_paths].map(item=>item[1])
+                                .reduce(function(a,b){
+                                    return a.concat(b)
+                                })
+                        }
+                        // console.log(selected_path)
+                        let p_color = selected_path.includes(paths[pid_in_group][0])? 'black':that.actColor['PATHLINE']
+                        let p_width = selected_path.includes(paths[pid_in_group][0])? 3*path_width:path_width
                         let points = path_set[pid_in_group]
                         let path_d = line(points)
-                        overview_G.append("path")
+                        overview_G.append("path").classed(`P${paths[pid_in_group][0]}`,true)
                             .data([points])
                             .attr("fill", "none")
-                            .attr("stroke", that.actColor['PATHLINE'])
-                            .attr("stroke-width", path_width)
+                            .attr("stroke", p_color)
+                            .attr("stroke-width", p_width)
                             .attr("d", line);
                     })
                     //features
@@ -1595,11 +2306,9 @@ export default {
                     loops = Array.from(loops.values())
                     loops.forEach(item=>{
                         let range = JSON.parse(item)
-                        console.log(range)
                         let start_idx = [...longest_sequence].indexOf(range[0])
                         let end_idx = [...longest_sequence].indexOf(range[1])
                         let seq = [...longest_sequence].slice(start_idx,end_idx+1)
-                        console.log(seq)
                         let wrap_gap = 4
                         let forward_points = []
                         let backward_points = []
@@ -1608,7 +2317,7 @@ export default {
                         for(let k=start_idx;k<=end_idx;k++){
                             let x_range = final_data[k]['x_range']
                             let y_range = final_data[k]['y_range']
-                            console.log(x_range,y_range)
+                            // console.log(x_range,y_range)
                             if(k==start_idx){
                                 // forward_points.push([x_scale_sub(x_range[0])-wrap_gap,y_range[1]+wrap_gap-2])
                                 // forward_points.push([x_scale_sub(x_range[0])-wrap_gap,y_range[0]-wrap_gap])
@@ -1634,12 +2343,12 @@ export default {
                                 end_loc = [x_range[1],...y_range]
                             }
                         }
-                        console.log(forward_points);
+                        // console.log(forward_points);
                         overview_G.append("path")
                             .data([backward_points])
                             .attr("fill", "none")
                             .attr("stroke", '#9b8ea9')
-                            .attr("stroke-width", 1)
+                            .attr("stroke-width", 1.5)
                             .attr("d", d=>{
                                 return `${loop_line(d)}  
                                 Q${x_scale_sub(end_loc[0])+wrap_gap} ${end_loc[2]+wrap_gap}, ${x_scale_sub(end_loc[0])+wrap_gap} ${end_loc[2]-wrap_gap}
@@ -1649,7 +2358,7 @@ export default {
                             .data([forward_points])
                             .attr("fill", "none")
                             .attr("stroke", '#9b8ea9')
-                            .attr("stroke-width", 1)
+                            .attr("stroke-width", 1.5)
                             .attr("d",d=> {
                                 return `M${x_scale_sub(start_loc[0])-wrap_gap} ${start_loc[2]+0.5*wrap_gap} V${start_loc[1]+wrap_gap}
                                 Q${x_scale_sub(start_loc[0])-wrap_gap} ${start_loc[1]-wrap_gap}, ${x_scale_sub(start_loc[0])+wrap_gap} ${start_loc[1]-wrap_gap} 
@@ -1680,7 +2389,7 @@ export default {
                             if(y_scale_sub(group_len)==y_scale_sub(0)){
                                 d = `M${x_scale_sub(res_node[0])} ${res_node[1]-6} V${y_scale_sub(group_len)-y_scale(1)+y_scale(0)} H${x_scale_sub(node[0])} V${node[1]-6} `
                             }
-                            console.log(d)
+                            // console.log(d)
                             overview_G.append('path')
                                     .attr('d',d)
                                     .attr('fill','none')
@@ -1688,9 +2397,9 @@ export default {
                         })
 
                     })
-                    console.log(caller,payinvestor)
+                    // console.log(caller,payinvestor)
                     //draw circle
-                    console.log(node_set)
+                    // console.log(node_set)
                     // node_set.forEach(node=>{
                     //     let act = node[2]
                     //     overview_G.append('circle')
@@ -1699,19 +2408,19 @@ export default {
                     //         .attr('stroke','white').attr('stroke-width',1)
                     // })
                     //draw nodes
+                    let select_nodes = [...this.select_actions].filter(item=>item[0]==group_name).map(item=>item[3].toString())
                     node_set.forEach(node=>{
                         let act = node[2]
-                        
+                        // console.log(this.select_actions,select_nodes)
                         if(act[0]=='PAY'){
                             overview_G.append('circle')
                                 .attr('cx',x_scale_sub(node[0])).attr('cy',node[1])
                                 .attr('r',6).attr('fill','none')
                                 .attr('stroke','black').attr('stroke-width',1)
                         }
-
                         overview_G.append('circle')
                             .attr('cx',x_scale_sub(node[0])).attr('cy',node[1])
-                            .attr('r',3).attr('fill',that.actColor[act[0]])
+                            .attr('r',that.actSize[act[0]]).attr('fill',that.actColor[act[0]])
                             .attr('stroke','white').attr('stroke-width',1)
                                 .on("mouseover",function(_event){
                                         that.hover_act(_event,act,[x_scale_sub(node[0]),node[1]])
@@ -1720,10 +2429,41 @@ export default {
                                         that.out_act()
                                     })
                                 .on("click",function(_event){
-                                        that.add_path(group_name,node[3].map(n=>paths[n][0]))
+                                        that.add_path(group_name,node[3].map(n=>paths[n][0]),x_scale_sub(node[0]),node[1],act)
                                     })
                     })
-                    console.log(final_data)
+                    node_set.filter(n=>select_nodes.includes(n[2].toString())).forEach(item=>{
+                        // console.log(item)
+                        overview_G.append('path').classed('arrow',true)
+                                .attr('d',"m17.981 9.376-4.981-1.196v-5.6a2.564 2.564 0 0 0 -2.087-2.546 2.5 2.5 0 0 0 -2.913 2.466v14.5a1 1 0 0 1 -2 0v-7.34l-2.789 3.64a5.021 5.021 0 0 0 .249 6.794l2.4 2.425a5.036 5.036 0 0 0 3.554 1.481h7.586a5 5 0 0 0 5-5v-4.721a5 5 0 0 0 -4.019-4.903z")
+                                .attr('stroke','black').attr('stroke-width',2).attr('fill','white')
+                                .attr('transform',`translate(${x_scale_sub(item[0])-5},${item[1]+5}) scale(0.6)`)
+                                .on('click',function(_event){
+                                    that.select_actions = [...that.select_actions].filter(a=>a[3].toString()!=item[2].toString())
+                                    let now_actions = [...that.select_actions].filter(a=>a[0]==group_name.toString())
+                                    let this_paths = item[3].map(n=>paths[n][0])
+                                    let now_paths = that.selected_group_paths.filter(g=>g[0]==group_name.toString())[0][1]
+                                    let now_selected_group = that.selected_group_paths
+                                    let without_this_group = [...now_selected_group].filter(item=>item[0]!=group_name.toString())
+                                    console.log(without_this_group)
+                                    if(now_actions.length==0){
+                                        that.selected_group_loc = [...that.selected_group_loc].filter(l=>l[0]!=group_name.toString())
+                                        that.selected_group_paths = without_this_group
+                                        // that.group_brush[group_name] = '-1'
+                                    }else if(now_actions.length==1){
+                                        let new_results = [...without_this_group,[group_name,now_actions[0][4]]]
+                                        that.selected_group_paths = new_results
+                                    }else{
+                                        let new_paths = now_actions.map(a=>a[4]).reduce((a,b)=>{
+                                            return a.filter(p=>b.includes(p))
+                                        })
+                                        let new_results = [...without_this_group,[group_name,new_paths]]
+                                        that.selected_group_paths = new_results
+                                    }
+                                    console.log(that.selected_group_paths,that.selected_group_loc,that.select_actions)
+                                })
+                    })
+                    // console.log(final_data)
                     //end of each sub group
                 })
 
@@ -1731,7 +2471,13 @@ export default {
                 //end of each group
             })
         },
-        add_path(group_name,paths_set){
+        add_action([group_name,x,y,act,paths_set]){
+            let actions = this.select_actions
+            if(!actions.includes([group_name,x,y,act,paths_set])){
+                this.select_actions.push([group_name,x,y,act,paths_set])
+            }
+        },
+        add_path(group_name,paths_set,x,y,act){
             console.log(group_name,paths_set)
             let now_selected_group = this.selected_group_paths
             let same_group = now_selected_group.filter(item=>item[0]==group_name.toString())
@@ -1743,22 +2489,92 @@ export default {
                     if(new_set.length>0){//有交集
                         let new_results = [...without_this_group,[group_name,new_set]]
                         this.selected_group_paths = new_results
+                        //action
+                        this.add_action([group_name,x,y,act,paths_set])
                     }else{//没有交集
                         let new_results = [...without_this_group,[group_name,paths_set]]
                         this.selected_group_paths = new_results
+                        //action
+                        this.select_actions = [...this.select_actions].filter(a=>a[0]!=group_name)
+                        this.add_action([group_name,x,y,act,paths_set])
                     }
                 }else{
                     let new_results = [...without_this_group,[group_name,paths_set]]
                     this.selected_group_paths = new_results
+                    this.add_action([group_name,x,y,act,paths_set])
                 }
             }else{//没有这个组
                 this.selected_group_paths = [...this.selected_group_paths,[group_name,paths_set]]
+                //action
+                this.add_action([group_name,x,y,act,paths_set])
             }
             console.log(this.selected_group_paths)
         },
         remove_group(group_name){
             this.selected_group_paths = [...this.selected_group_paths].filter(item=>item[0]!=group_name.toString())
             this.selected_group_loc = [...this.selected_group_loc].filter(item=>item[0]!=group_name.toString())
+        },
+        highlight_Path(pid){
+            d3.selectAll(`path.P${pid}`)
+                .attr('stroke','black')
+                .attr('stroke-width',2)
+        },
+        compareAndFindDifference(str1, str2) {
+            const m = str1.length;
+            const n = str2.length;
+            let stop = true
+            let new_str1 = str1
+            let new_str2 = str2
+            let same_set = []
+            let diff_set1 = []
+            let diff_set2 = []
+            while(stop){
+                let res = this.findLongestSubstring(new_str1,new_str2)
+                same_set.push(res)
+                let s1 = new_str1.split(res)
+                let s2 = new_str2.split(res)
+                diff_set1.push(s1[0])
+                diff_set2.push(s2[0])
+                new_str1 = s1[1]
+                new_str2 = s2[1]
+
+                if(new_str1.length<1 | new_str2.length<1){
+                    stop = false
+                }
+            }
+            diff_set1.push(new_str1)
+            diff_set2.push(new_str2)
+            return [same_set,diff_set1,diff_set2]
+        },
+        findLongestSubstring(str1,str2){
+            const m = str1.length;
+            const n = str2.length;
+            let maxLength = 0; // 最长公共子串的长度
+            let endIndex = 0; // 最长公共子串的结束索引
+            let end1 = 1 
+            let end2 = 0 
+            // 创建一个二维数组来存储公共子串的长度
+            const dp = new Array(m + 1).fill(0).map(() => new Array(n + 1).fill(0));
+
+            // 填充动态规划表
+            for (let i = 1; i <= m; i++) {
+                for (let j = 1; j <= n; j++) {
+                if (str1[i - 1] === str2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                    if (dp[i][j] > maxLength) {
+                    maxLength = dp[i][j];
+                    endIndex = i - 1;
+                    }
+                } else {
+                    dp[i][j] = 0;
+                }
+                }
+            }
+
+            // 根据最长公共子串的长度和结束索引提取出最长公共子串
+            const longestCommonSubstring = str1.substring(endIndex - maxLength + 1, endIndex + 1);
+
+            return longestCommonSubstring;
         },
         // drawMergePath(svg,start_parts,groups,Paths_Data,start,width){
         //     console.log(start_parts,groups,Paths_Data)
@@ -2385,164 +3201,164 @@ export default {
         //     that.drawPaths2(svg,start_parts,groups,this.Paths_Data,end,height)
 
         // },
-        drawPaths2(svg,start_parts,groups,Paths_Data,start,width){
-            console.log(start_parts,groups,Paths_Data)
-            //remove g
-            let that = this
-            d3.select('g.overview_G').remove()
+        // drawPaths2(svg,start_parts,groups,Paths_Data,start,width){
+        //     console.log(start_parts,groups,Paths_Data)
+        //     //remove g
+        //     let that = this
+        //     d3.select('g.overview_G').remove()
 
-            let right = that.svgWidth - that.margin.right
-            let overview_G = svg.append('g').classed('overview_G',true)
+        //     let right = that.svgWidth - that.margin.right
+        //     let overview_G = svg.append('g').classed('overview_G',true)
 
-            let group_ids = Object.keys(start_parts)
+        //     let group_ids = Object.keys(start_parts)
 
-            //each group
-            group_ids.forEach(item=>{
-                let location = start_parts[item]
-                let paths = [...groups[item]].sort((a,b)=>{ //sorted paths
-                    for(let i=0;i<a[1].length;i++){
-                        let res = b[1][i] - a[1][i]
-                        if(res!=0){
-                            return res
-                        }
-                    }
-                })
-                console.log(location,paths)
+        //     //each group
+        //     group_ids.forEach(item=>{
+        //         let location = start_parts[item]
+        //         let paths = [...groups[item]].sort((a,b)=>{ //sorted paths
+        //             for(let i=0;i<a[1].length;i++){
+        //                 let res = b[1][i] - a[1][i]
+        //                 if(res!=0){
+        //                     return res
+        //                 }
+        //             }
+        //         })
+        //         console.log(location,paths)
 
-                let y_scale = d3.scaleLinear().domain([-1,paths.length]).range([location[1],location[1]+location[2]])
-                paths.forEach((item,idx)=>{
-                    let p_G = overview_G.append('g')
-                    let p_data = Paths_Data[item[0]]
-                    p_G.append('line')
-                        .attr("x1",start+2).attr("y1",y_scale(idx))
-                        .attr("x2",right).attr("y2",y_scale(idx))
-                        .attr("stroke",that.actColor['LINE']).attr("stroke-width",that.actSize['LINE'])
-                        // .attr("stroke",'black').attr("stroke-width",that.actSize['LINE'])
+        //         let y_scale = d3.scaleLinear().domain([-1,paths.length]).range([location[1],location[1]+location[2]])
+        //         paths.forEach((item,idx)=>{
+        //             let p_G = overview_G.append('g')
+        //             let p_data = Paths_Data[item[0]]
+        //             p_G.append('line')
+        //                 .attr("x1",start+2).attr("y1",y_scale(idx))
+        //                 .attr("x2",right).attr("y2",y_scale(idx))
+        //                 .attr("stroke",that.actColor['LINE']).attr("stroke-width",that.actSize['LINE'])
+        //                 // .attr("stroke",'black').attr("stroke-width",that.actSize['LINE'])
 
-                    if(p_data['loop'].length>0){ // have loop
-                        let none_loop_segments = p_data['none_loop_segments']
-                        let loop_segments = p_data['loop_segments']
-                        let actions = none_loop_segments[0][4]
-                        // console.log(actions)
-                        let loop_range = []
-                        let cursor = actions.length
-                        for(let i=0;i<none_loop_segments.length-1;i++){
-                            let loop_data = loop_segments.filter(item=>item[0]==i)[0]
-                            // console.log(loop_data)
-                            let start = cursor
-                            actions = [...actions,...loop_data[4],...none_loop_segments[i+1][4]]
-                            cursor = actions.length 
-                            loop_range.push([start,start+loop_data[4].length])
-                        }
-                        // console.log(actions,loop_range)
-                        let x_scale =  d3.scaleLinear().domain([-1,actions.length]).range([start,right])
-                        let y_gap = y_scale(1)-y_scale(0)
-                        let gap_rate = 0.1
-                        loop_range.forEach(item=>{
-                            let l_width = y_gap*(1-gap_rate*2)
-                            p_G.append('rect')
-                                .attr('y',y_scale(idx-0.5)+gap_rate*y_gap).attr('x',x_scale(item[0]-0.5))
-                                .attr('height',l_width).attr('width',x_scale(item[1])-x_scale(item[0]))
-                                .attr('rx',l_width/2).attr('ry',l_width/2)
-                                .attr('fill',that.actColor['LINE'])
-                                // .attr('stroke','black')
-                        })
+        //             if(p_data['loop'].length>0){ // have loop
+        //                 let none_loop_segments = p_data['none_loop_segments']
+        //                 let loop_segments = p_data['loop_segments']
+        //                 let actions = none_loop_segments[0][4]
+        //                 // console.log(actions)
+        //                 let loop_range = []
+        //                 let cursor = actions.length
+        //                 for(let i=0;i<none_loop_segments.length-1;i++){
+        //                     let loop_data = loop_segments.filter(item=>item[0]==i)[0]
+        //                     // console.log(loop_data)
+        //                     let start = cursor
+        //                     actions = [...actions,...loop_data[4],...none_loop_segments[i+1][4]]
+        //                     cursor = actions.length 
+        //                     loop_range.push([start,start+loop_data[4].length])
+        //                 }
+        //                 // console.log(actions,loop_range)
+        //                 let x_scale =  d3.scaleLinear().domain([-1,actions.length]).range([start,right])
+        //                 let y_gap = y_scale(1)-y_scale(0)
+        //                 let gap_rate = 0.1
+        //                 loop_range.forEach(item=>{
+        //                     let l_width = y_gap*(1-gap_rate*2)
+        //                     p_G.append('rect')
+        //                         .attr('y',y_scale(idx-0.5)+gap_rate*y_gap).attr('x',x_scale(item[0]-0.5))
+        //                         .attr('height',l_width).attr('width',x_scale(item[1])-x_scale(item[0]))
+        //                         .attr('rx',l_width/2).attr('ry',l_width/2)
+        //                         .attr('fill',that.actColor['LINE'])
+        //                         // .attr('stroke','black')
+        //                 })
 
-                        actions.forEach((act,act_idx)=>{
-                            p_G.append('circle')
-                                .attr('cy',y_scale(idx))
-                                .attr('cx',x_scale(act_idx))
-                                .attr('r',that.actSize[act[0]])
-                                .attr("fill",that.actColor[act[0]])
-                                .attr("stroke",that.actColor['STROKE'])
-                                .attr('stroke-width',that.actSize['STROKE'])
-                                    .on("mouseover",function(_event){
-                                        that.hover_act(_event,act)
-                                    }).on("mouseout",function(_event){
-                                        that.out_act()
-                                    })
-                        })
-                        p_G.on('click',function(_event){
-                                        that.click_path(item[0])
-                                    })
+        //                 actions.forEach((act,act_idx)=>{
+        //                     p_G.append('circle')
+        //                         .attr('cy',y_scale(idx))
+        //                         .attr('cx',x_scale(act_idx))
+        //                         .attr('r',that.actSize[act[0]])
+        //                         .attr("fill",that.actColor[act[0]])
+        //                         .attr("stroke",that.actColor['STROKE'])
+        //                         .attr('stroke-width',that.actSize['STROKE'])
+        //                             .on("mouseover",function(_event){
+        //                                 that.hover_act(_event,act)
+        //                             }).on("mouseout",function(_event){
+        //                                 that.out_act()
+        //                             })
+        //                 })
+        //                 p_G.on('click',function(_event){
+        //                                 that.click_path(item[0])
+        //                             })
 
-                    }else{// no loop
-                        let actions = p_data['sorted_actions']
-                        let x_scale =  d3.scaleLinear().domain([-1,actions.length]).range([start,right])
-                        actions.forEach((act,act_idx)=>{
-                            overview_G.append('circle')
-                                .attr('cx',x_scale(act_idx))
-                                .attr('cy',y_scale(idx))
-                                .attr('r',that.actSize[act[0]])
-                                .attr("fill",that.actColor[act[0]])
-                                .attr("stroke",that.actColor['STROKE'])
-                                .attr('stroke-width',that.actSize['STROKE'])
-                                    .on("mouseover",function(_event){
-                                        that.hover_act(_event,act)
-                                    }).on("mouseout",function(_event){
-                                        that.out_act()
-                                    }).on('click',function(_event){
-                                        that.click_path(item[0])
-                                    })
-                        })
-                    }
+        //             }else{// no loop
+        //                 let actions = p_data['sorted_actions']
+        //                 let x_scale =  d3.scaleLinear().domain([-1,actions.length]).range([start,right])
+        //                 actions.forEach((act,act_idx)=>{
+        //                     overview_G.append('circle')
+        //                         .attr('cx',x_scale(act_idx))
+        //                         .attr('cy',y_scale(idx))
+        //                         .attr('r',that.actSize[act[0]])
+        //                         .attr("fill",that.actColor[act[0]])
+        //                         .attr("stroke",that.actColor['STROKE'])
+        //                         .attr('stroke-width',that.actSize['STROKE'])
+        //                             .on("mouseover",function(_event){
+        //                                 that.hover_act(_event,act)
+        //                             }).on("mouseout",function(_event){
+        //                                 that.out_act()
+        //                             }).on('click',function(_event){
+        //                                 that.click_path(item[0])
+        //                             })
+        //                 })
+        //             }
 
 
-                })
-            })
-        },
-        drawPaths(svg,data,that,width,height,start){
-            //remove g
-            d3.select('g.path_G').remove()
+        //         })
+        //     })
+        // },
+        // drawPaths(svg,data,that,width,height,start){
+        //     //remove g
+        //     d3.select('g.path_G').remove()
 
-            let path_G = svg.append('g').classed("path_G",true)
+        //     let path_G = svg.append('g').classed("path_G",true)
             
-            let paths = Object.keys(data).slice(0,-1)
-            let storage = data['storage']
-            let x_scale = d3.scaleLinear().domain([-1,paths.length]).range([that.margin.left,that.margin.left+width])
+        //     let paths = Object.keys(data).slice(0,-1)
+        //     let storage = data['storage']
+        //     let x_scale = d3.scaleLinear().domain([-1,paths.length]).range([that.margin.left,that.margin.left+width])
 
-            paths.forEach( (path,idx) => {
-                let p_data = data[path]
-                let sorted_actions = p_data['sortedActions']
-                let p_G = path_G.append('g').classed('p_G',true)
-                let y_scale = d3.scaleLinear().domain([-2,sorted_actions.length+1]).range([start,that.margin.top+height])
+        //     paths.forEach( (path,idx) => {
+        //         let p_data = data[path]
+        //         let sorted_actions = p_data['sortedActions']
+        //         let p_G = path_G.append('g').classed('p_G',true)
+        //         let y_scale = d3.scaleLinear().domain([-2,sorted_actions.length+1]).range([start,that.margin.top+height])
 
                     
-                p_G.append('line').classed('act',true)
-                    .attr("x1",x_scale(idx)).attr("y1",start)
-                    .attr("x2",x_scale(idx)).attr("y2",that.margin.top+height)
-                    .attr("stroke",that.actColor['LINE']).attr("stroke-width",that.actSize['LINE'])
+        //         p_G.append('line').classed('act',true)
+        //             .attr("x1",x_scale(idx)).attr("y1",start)
+        //             .attr("x2",x_scale(idx)).attr("y2",that.margin.top+height)
+        //             .attr("stroke",that.actColor['LINE']).attr("stroke-width",that.actSize['LINE'])
 
-                sorted_actions.forEach((d,i)=>{
-                    p_G.append('circle')
-                        .classed('act',true)
-                            .attr('cx',x_scale(idx))
-                            .attr('cy',y_scale(i))
-                            .attr('r',that.actSize[d[0]])
-                            .attr("fill",that.actColor[d[0]])
-                            .attr("stroke",that.actColor['STROKE'])
-                            .attr('stroke-width',that.actSize['STROKE'])
-                                .on("mouseover",function(_event){
-                                    that.hover_act(_event,d,[x_scale(idx),y_scale(i)])
-                                }).on("mouseout",function(_event){
-                                    that.out_act()
-                                })
-                    if(d[d.length-1]=='callback' | d[d.length-1]=='update' ){
-                        p_G.append('circle')
-                            .attr('cx',x_scale(idx))
-                                .attr('cy',y_scale(i))
-                                .attr('r',that.actSize[d[0]]-2*that.actSize['STROKE'])
-                                .attr("fill",'none')
-                                .attr("stroke",that.actColor['STROKE'])
-                                .attr('stroke-width',that.actSize['STROKE'])
-                    }
-                })
-                //click function
-                p_G.on('click',function(_event){
-                                that.click_path(idx)
-                            })
-            })
-        },        
+        //         sorted_actions.forEach((d,i)=>{
+        //             p_G.append('circle')
+        //                 .classed('act',true)
+        //                     .attr('cx',x_scale(idx))
+        //                     .attr('cy',y_scale(i))
+        //                     .attr('r',that.actSize[d[0]])
+        //                     .attr("fill",that.actColor[d[0]])
+        //                     .attr("stroke",that.actColor['STROKE'])
+        //                     .attr('stroke-width',that.actSize['STROKE'])
+        //                         .on("mouseover",function(_event){
+        //                             that.hover_act(_event,d,[x_scale(idx),y_scale(i)])
+        //                         }).on("mouseout",function(_event){
+        //                             that.out_act()
+        //                         })
+        //             if(d[d.length-1]=='callback' | d[d.length-1]=='update' ){
+        //                 p_G.append('circle')
+        //                     .attr('cx',x_scale(idx))
+        //                         .attr('cy',y_scale(i))
+        //                         .attr('r',that.actSize[d[0]]-2*that.actSize['STROKE'])
+        //                         .attr("fill",'none')
+        //                         .attr("stroke",that.actColor['STROKE'])
+        //                         .attr('stroke-width',that.actSize['STROKE'])
+        //             }
+        //         })
+        //         //click function
+        //         p_G.on('click',function(_event){
+        //                         that.click_path(idx)
+        //                     })
+        //     })
+        // },        
         //click the path
         click_path(idx){
             this.$emit("update_selected_path", idx);
@@ -2572,7 +3388,7 @@ export default {
                 }else if(String(d[4]).includes('CALLDATA')){
                     text.push(`PAY TO OUTSIDE`)
                 }else{
-                    text.push(`Get Receiver from #${d[4]}`)
+                    text.push(`Pay to: ${d[4]}`)
                 }
                 text.push(`Value: ${d[5]}`)
             }
@@ -2583,6 +3399,9 @@ export default {
         out_act(){
             d3.select('div.tooltip_path').attr('style',`visibility:hidden`)
         },
+        remove_diff(){
+            d3.select('div.diff').attr('style',`visibility:hidden`)
+        }
     },
     created(){
     },
@@ -2626,12 +3445,12 @@ export default {
     width:10px;
     height:2px;
 }
-/* text {
-    font-family:Arial, Helvetica, sans-serif;
-    font-weight: 600;
-    color: #606e79;
-    font-size: 15px;
-} */
+.difftext{
+    color:#ba5140
+}
+.sametext{
+    color:#68945c
+}
 p.control {
     font-family:Arial, Helvetica, sans-serif;
     font-weight: 600;
@@ -2655,5 +3474,26 @@ p.control {
     padding-left: 8px;
     padding-right: 8px;
     text-align: left;
+}
+.diff {
+    position: absolute;
+    visibility: hidden;
+    margin-left: 0px;
+    margin-top: 0px;
+    text-anchor: start;
+    background-color: white;
+    border-color:black;
+    border-width:1px;
+    color: black;
+    border-radius: 5px;
+    font-size: 10px;
+    width: auto;
+    max-width: 400px;
+    word-wrap: break-word;
+    height: auto;
+    padding-left: 8px;
+    padding-right: 8px;
+    text-align: left;
+    font-family:Arial;
 }
 </style>

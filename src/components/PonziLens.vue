@@ -9,9 +9,8 @@
         <n-card 
         class="custom-card"
       size="small"
-      style="width:100%;height:100%;"
+      style="width:90%;height:100%;"
       header-style="text-align:left;height:50px;font-size:1.7em"
-
       > 
       <path-view 
       :act-color="actColor"
@@ -56,21 +55,22 @@ import PathView from './PathView.vue'
 // import Actions from "../assets/DynamicPyramid-filtered.json"
 // import Actions from "../assets/Doubler-filtered.json"
 // import Actions from "../assets/Etheramid-filtered.json"
-import Actions from "../assets/MyScheme-filtered.json"
+// import Actions from "../assets/MyScheme-filtered.json"
 // import Actions from "../assets/whale-filtered.json"
 // import Actions from "../assets/x15-filtered.json"
 // import Actions from "../assets/withdraw-filtered.json"
 // import Actions from "../assets/daily12-filtered.json"
+import Actions from "../assets/fiveforty2-filtered.json"
 
 export default {
   components:{ NCard, NLayout, NSwitch, NSpace, NLayoutHeader, NLayoutFooter, NLayoutContent, ActionView , PathView},
   data(){
     return {
       actColor:{
-                'READ':'#c7c6b6',
-                'WRITE':'#6e9bc5',
-                'PAY':'#ee7959',
-                'CONS':'#ffee6f',
+                'READ':'#a6a6a6', //#a6a6a6 #c7c6b6
+                'WRITE':'#92b0c9', //#92b0c9 #6e9bc5
+                'PAY':'#c67269', //#c67269 #ee7959
+                'CONS':'#dcbd8b',//#779649 #ffee6f #dcbd8b
                 'LINE':'#b2b6b6',//
                 'PATHLINE':'#6b798e',
                 'STROKE':'white',
