@@ -1,10 +1,12 @@
 <template>
     <div id="svg-container" style="height:100%;width:100%;background:white;" ref="container" class="display-flex">
-        <div class="view_title" style="margin-left:-15px;margin-top:-11px;height:20px;width:100%;
-        background:#e9ecef;position: absolute;font: 1.2em sans-serif;text-align:center;font-weight: 600;border-radius: 5px;">
-            Path Overview
-        </div> 
         <svg class="Path" :height="this.svgHeight" :width="this.svgWidth" style="position:absolute">
+            <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+                <feComposite in="flood" in2="blur" operator="in" result="shadow"/>
+                <feOffset in="SourceAlpha" dx="1" dy="1" result="offset"/>
+                <feGaussianBlur in="offset" stdDeviation="3" result="blur"/>
+                <feBlend in="SourceGraphic" in2="blur" mode="normal"/>
+            </filter>
         </svg>     
         <div class="tooltip_path" style="position:absolute;z-index:2">
                <p>111</p>
@@ -18,7 +20,12 @@
 import {NInputNumber,NButton,NDatePicker,NSwitch,NSelect,NCard} from 'naive-ui'
 import * as d3 from "d3"
 
+
 // import Actions from "../assets/Daily12.json"
+//        <div class="view_title" style="margin-left:-15px;margin-top:-11px;height:20px;width:100%;
+// background:#e9ecef;position: absolute;font: 1.2em sans-serif;text-align:center;font-weight: 600;border-radius: 5px;">
+//             Path Overview
+//         </div> 
 
 export default {
     name:"Path View",
@@ -28,7 +35,7 @@ export default {
         return {
             svgHeight:'0',
             svgWidth:'0',
-            margin:{top:20,bottom:0,left:0,right:5},
+            margin:{top:0,bottom:0,left:0,right:5},
             actSize:{
                 'READ':4,
                 'WRITE':4,
@@ -69,6 +76,7 @@ export default {
             pay_slot:[],
             lil_height:1.5,
             legend_check:false,
+            feature_left:0,
         }
     },
     computed:{
@@ -78,6 +86,15 @@ export default {
             // if(newVal != oldVal){
                 this.drawInit()
             // }
+        },
+        actions:function(newVal, oldVal){
+            console.log(this.actions)
+            this.select_actions=[]
+            this.selected_group_paths=[]
+            this.selected_group_loc=[]
+            let data  = this.actions
+            this.dataInit(data)
+            this.drawInit()
         },
         // select_actions:function(newVal, oldVal){
         //     if(newVal != oldVal){
@@ -123,52 +140,73 @@ export default {
                 this.drawInsertView()
                 this.drawBrushBar(svg)
             }
-            if(!this.legend_check){
-                this.drawlegend(svg,filter_height+that.margin.top)
-                this.legend_check = true
-            }
+            // if(!this.legend_check){
+            //     this.drawlegend(svg,filter_height+that.margin.top)
+            //     this.legend_check = true
+            // }
+            this.drawlegend(svg,filter_height+that.margin.top)
         },
         drawlegend(svg,y1){
             d3.select('g.legend').remove()
             let that = this
-            let left = that.margin.left + that.actSize['PAY']
+            let left = that.feature_left + that.actSize['PAY']*2
             let legend_G = svg.append('g').classed('legend',true)
             let gap = 8
             let font_size = 10
-            let y_cursor = 0
-            y_cursor += y1 + gap*1.5
+            let y_cursor = y1 +gap*1.5
+            let text_loc =  left + that.actSizeD['PAY']*23
+
+            //legend boarder
+            legend_G.append('rect')
+                .attr('x',left - that.actSize['PAY']*2 ).attr('y',y_cursor)
+                .attr('width', that.actSizeD['PAY']*26).attr('height',(gap+font_size)*20.2)
+                .attr('stroke','#a4b0be').attr('fill','white').attr('stroke-width',0)
+                .attr('rx',5).attr('ry',5)
+                .attr('filter','url(#shadow)')
+            y_cursor += gap*1.5
+            //legend content  
+            legend_G.append('rect')
+                .attr('x',left - that.actSize['PAY']*2 ).attr('y',y_cursor-1.5*gap)
+                .attr('width', that.actSizeD['PAY']*3).attr('height',(gap+font_size)*0.8)
+                .attr('stroke','#a4b0be').attr('fill','#747d8c').attr('stroke-width',0)
+                .attr('rx',5).attr('ry',5)
+            legend_G.append('path')
+                .attr('d',`M${left - that.actSize['PAY']*2} ${y_cursor+gap} h${that.actSizeD['PAY']*10} l${that.actSizeD['PAY']*1} ${-2.5*gap} h${-that.actSizeD['PAY']*11+5}
+                            l${-5} ${0.5*gap}`)
+                .attr('fill','#747d8c')
             legend_G.append('text')
-                        .attr('x',left).attr('y',y_cursor+1)
+                        .attr('x',left).attr('y',y_cursor-1)
+                        .attr('fill','white')
                         .attr('text-anchor','start').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size+1)
-                .text('ACTIONS:')
+                .text('Actions')
             y_cursor += font_size + gap
             legend_G.append('text')
-                .attr('x',left+that.actSizeD['PAY']*9).attr('y',y_cursor+1)
-                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('x',text_loc).attr('y',y_cursor+1)
+                .attr('text-anchor','end').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size)
-                .text('Write Information (Update)')
+                .text('Write Information')
             legend_G.append('circle')
                 .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']).attr('fill',that.actColor['WRITE'])
             that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['WRITE'])
             that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*7,y_cursor,['WRITE','update'])
             y_cursor += font_size + gap
             legend_G.append('text')
-                .attr('x',left+that.actSizeD['PAY']*9).attr('y',y_cursor+1)
-                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('x',text_loc).attr('y',y_cursor+1)
+                .attr('text-anchor','end').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size)
-                .text('Invoke Payment (Payback)')
+                .text('Invoke Payment')
             legend_G.append('circle')
                 .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['PAY']).attr('fill',that.actColor['PAY'])
             that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['PAY'])
             that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*7,y_cursor,['PAY','callback'])
             y_cursor += font_size + gap
             legend_G.append('text')
-                .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
-                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('x',text_loc).attr('y',y_cursor+1)
+                .attr('text-anchor','end').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size)
                 .text('Check Constraint')
@@ -177,8 +215,8 @@ export default {
             that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['CONS'])
             y_cursor += font_size + gap
             legend_G.append('text')
-                        .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
-                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('x',text_loc).attr('y',y_cursor+1)
+                        .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size)
                 .text('Read Information')
@@ -188,42 +226,46 @@ export default {
 
             //HIGGLIGHT FEATURE
             y_cursor += font_size + gap*1.5
+            legend_G.append('path')
+                .attr('d',`M${left - that.actSize['PAY']*2} ${y_cursor+gap} h${that.actSizeD['PAY']*19} l${that.actSizeD['PAY']*1} ${-2.5*gap} h${-that.actSizeD['PAY']*20}`)
+                .attr('fill','#747d8c')
             legend_G.append('text')
-                        .attr('x',left).attr('y',y_cursor+1)
+                        .attr('x',left).attr('y',y_cursor-1)
+                        .attr('fill','white')
                         .attr('text-anchor','start').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size+1)
-                .text('HIGHLIGHT FEATURES:')
+                .text('Highlight Features')
             y_cursor += font_size + gap
             legend_G.append('text')
-                .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('x',text_loc).attr('y',y_cursor+1)
+                .attr('text-anchor','end').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size)
-                .text('Write CALLER')
+                .text('Investing')
             legend_G.append('circle')
-                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']+2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
+                .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',that.actSize['WRITE']+2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
             legend_G.append('circle')
-                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']).attr('fill',that.actColor['WRITE'])
+                .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',that.actSize['WRITE']).attr('fill',that.actColor['WRITE'])
             y_cursor += font_size + gap
             legend_G.append('text')
-                .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('x',text_loc).attr('y',y_cursor+1)
+                .attr('text-anchor','end').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size)
-                .text('Invoke Payment')
+                .text('Payment')
             legend_G.append('circle')
-                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']+2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
+                .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',that.actSize['WRITE']+2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
             legend_G.append('circle')
-                .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['PAY']).attr('fill',that.actColor['PAY'])
+                .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',that.actSize['PAY']).attr('fill',that.actColor['PAY'])
             //loop 
             y_cursor += font_size + gap*1.5
             legend_G.append('text')
-                .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
-                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('x',text_loc).attr('y',y_cursor+1)
+                .attr('text-anchor','end').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size)
-                .text('Loop Path')
+                .text('Loop')
             let l_height = (font_size + gap)*0.6
             let d1 = `M${left} ${y_cursor+0.4*l_height} v${-0.8*l_height}
             Q${left} ${y_cursor-0.5*l_height}, ${left+0.2*l_height} ${y_cursor-0.5*l_height}
@@ -233,6 +275,7 @@ export default {
                             .attr("stroke", '#9b8ea9')
                             .attr("stroke-width", 1.5)
                             .attr("d", d1)
+                            .attr('transform',`translate(${that.actSizeD['PAY']*2},${0})`)
             let d2 = `M${left+0.2*l_height+that.actSizeD['PAY']*4} ${y_cursor-0.3*l_height} v${0.8*l_height}
             Q${left+0.2*l_height+that.actSizeD['PAY']*4} ${y_cursor+0.5*l_height}, ${left+that.actSizeD['PAY']*4} ${y_cursor+0.5*l_height}
             h${-that.actSizeD['PAY']*4} l${0.3*l_height} ${+0.3*l_height}`
@@ -241,142 +284,111 @@ export default {
                             .attr("stroke", '#9b8ea9')
                             .attr("stroke-width", 1.5)
                             .attr("d", d2)
+                            .attr('transform',`translate(${that.actSizeD['PAY']*2},${0})`)
             //pay to previous investor
             y_cursor += font_size + gap*2
             legend_G.append('text')
-                .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
-                .attr('text-anchor','start').attr('dominant-baseline','middle')
+                .attr('x',text_loc).attr('y',y_cursor+1)
+                .attr('text-anchor','end').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size)
-                .text('Pay to previous investors')
+                .text('Rewarding')
             let r2 = that.actSize['WRITE']+2
-            legend_G.append('circle')
+            let p2i_G = legend_G.append('g')
+            p2i_G.append('circle')
                 .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',r2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
-            legend_G.append('circle')
+            p2i_G.append('circle')
                 .attr('cx',left+that.actSizeD['PAY']).attr('cy',y_cursor).attr('r',that.actSize['WRITE']).attr('fill',that.actColor['WRITE'])
-            legend_G.append('circle')
+            p2i_G.append('circle')
                 .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',r2).attr('fill','none').attr('stroke','black').attr('stroke-width',1)
-            legend_G.append('circle')
+            p2i_G.append('circle')
                 .attr('cx',left+that.actSizeD['PAY']*4).attr('cy',y_cursor).attr('r',that.actSize['PAY']).attr('fill',that.actColor['PAY'])
             let p2i_d = `M${left+that.actSizeD['PAY']} ${y_cursor-r2} v${-0.8*gap} h${that.actSizeD['PAY']*3} v${0.8*gap}`
-            legend_G.append("path")
+            p2i_G.append("path")
                             .attr("fill", "none")
                             .attr("stroke", 'black')
                             .attr("stroke-width", 1)
                             .attr("d", p2i_d)
-            // actions
-            // y_cursor += font_size + gap*1.5
-            // legend_G.append('text')
-            //             .attr('x',left).attr('y',y_cursor+1)
-            //             .attr('text-anchor','start').attr('dominant-baseline','middle')
-            //             .attr('font-family','Arial').attr('font-weight','bold')
-            //             .attr('font-size',font_size+1)
-            //     .text('ACTIONS (DETAIL):')
-            // y_cursor += font_size + gap
-            // legend_G.append('text')
-            //             .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
-            //             .attr('text-anchor','start').attr('dominant-baseline','middle')
-            //             .attr('font-family','Arial').attr('font-weight','bold')
-            //             .attr('font-size',font_size)
-            //     .text('Write Information (Update)')
-            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['WRITE'])
-            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['WRITE','update'])
-            // y_cursor += font_size + gap
-            // legend_G.append('text')
-            //     .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
-            //     .attr('text-anchor','start').attr('dominant-baseline','middle')
-            //     .attr('font-family','Arial').attr('font-weight','bold')
-            //     .attr('font-size',font_size)
-            //     .text('Invoke Payment (Pay Back)')
-            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['PAY'])
-            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY']*4,y_cursor,['PAY','callback'])
-            // y_cursor += font_size + gap
-            // legend_G.append('text')
-            //     .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-            //     .attr('text-anchor','start').attr('dominant-baseline','middle')
-            //     .attr('font-family','Arial').attr('font-weight','bold')
-            //     .attr('font-size',font_size)
-            //     .text('Check Constraint')
-            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['CONS'])
-            // y_cursor += font_size + gap
-            // legend_G.append('text')
-            //             .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-            //             .attr('text-anchor','start').attr('dominant-baseline','middle')
-            //             .attr('font-family','Arial').attr('font-weight','bold')
-            //             .attr('font-size',font_size)
-            //     .text('Read Information')
-            // that.drawGlyphs(legend_G,left+that.actSizeD['PAY'],y_cursor,['READ'])
+            p2i_G.attr('transform',`translate(${that.actSizeD['PAY']*1.5},${0})`)
 
             //STORAGE
-            let storage_x = left+that.actSizeD['PAY']-that.actSizeD['SLOT']*0.5
+            let storage_x = left+that.actSizeD['PAY']*4-that.actSizeD['SLOT']*0.5
             // storage
             y_cursor += font_size + gap*2
+            legend_G.append('path')
+                .attr('d',`M${left - that.actSize['PAY']*2} ${y_cursor+gap} h${that.actSizeD['PAY']*15} l${that.actSizeD['PAY']*1} ${-2.5*gap} h${-that.actSizeD['PAY']*16}`)
+                .attr('fill','#747d8c')
             legend_G.append('text')
-                .attr('x',left).attr('y',y_cursor+1)
+                .attr('x',left).attr('y',y_cursor-1)
+                .attr('fill','white')
                 .attr('text-anchor','start').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size+1)
-                .text('STORAGE TYPE:')
+                .text('Storage Type')
 
-            y_cursor += font_size + gap
+            y_cursor += font_size + gap +2
             legend_G.append('text')
-                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('x',text_loc).attr('y',y_cursor+1)
+                        .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size)
                 .text('Variable')
             that.drawSlots(legend_G,storage_x,y_cursor-that.actSizeD['SLOT']*0.5,['variable'],that.lil_height,false)
             y_cursor += font_size + gap
             legend_G.append('text')
-                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('x',text_loc).attr('y',y_cursor+1)
+                        .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size)
                 .text('Array')
             that.drawSlots(legend_G,storage_x,y_cursor-that.actSizeD['SLOT']*0.5,['array'],that.lil_height,false)
             y_cursor += font_size + gap 
             legend_G.append('text')
-                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('x',text_loc).attr('y',y_cursor+1)
+                        .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size)
                 .text('Mapping')
             that.drawSlots(legend_G,storage_x,y_cursor-that.actSizeD['SLOT']*0.5,['mapping'],that.lil_height,false)
             //contents
-            let content_x = left+that.actSizeD['PAY']
+            let content_x = left+that.actSizeD['PAY']*2
             y_cursor += font_size + gap*2
+            legend_G.append('path')
+                .attr('d',`M${left - that.actSize['PAY']*2} ${y_cursor+gap} h${that.actSizeD['PAY']*18} l${that.actSizeD['PAY']*1} ${-2.5*gap} h${-that.actSizeD['PAY']*19}`)
+                .attr('fill','#747d8c')
             legend_G.append('text')
-                .attr('x',left).attr('y',y_cursor+1)
+                .attr('x',left).attr('y',y_cursor-1)
+                .attr('fill','white')
                 .attr('text-anchor','start').attr('dominant-baseline','middle')
                 .attr('font-family','Arial').attr('font-weight','bold')
                 .attr('font-size',font_size+1)
-                .text('STORAGE CONTENTS:')
+                .text('Storage Contents')
             y_cursor += font_size + gap 
             legend_G.append('text')
-                        .attr('x',left+that.actSizeD['PAY']*3).attr('y',y_cursor+1)
-                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('x',text_loc).attr('y',y_cursor+1)
+                        .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size)
                 .text('Unrelated')
             that.drawSlotContents(legend_G,content_x,y_cursor,that.actSizeD['SLOT'],'---')
             y_cursor += font_size + gap 
             legend_G.append('text')
-                        .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor+1)
-                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('x',text_loc).attr('y',y_cursor+1)
+                        .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size)
-                .text('CALLVALUE (Related)')
+                .text('Callvalue')
             that.drawSlotContents(legend_G,content_x,y_cursor,that.actSize['SLOT'],'CALLVALUE')
-            that.drawSlotContents(legend_G,left+that.actSizeD['PAY']*4,y_cursor,that.actSize['SLOT'],'CALLVALUE---')
+            that.drawSlotContents(legend_G,content_x+that.actSizeD['PAY']*3,y_cursor,that.actSize['SLOT'],'CALLVALUE---')
             y_cursor += font_size + gap
             legend_G.append('text')
-                        .attr('x',left+that.actSizeD['PAY']*6).attr('y',y_cursor)
-                        .attr('text-anchor','start').attr('dominant-baseline','middle')
+                        .attr('x',text_loc).attr('y',y_cursor)
+                        .attr('text-anchor','end').attr('dominant-baseline','middle')
                         .attr('font-family','Arial').attr('font-weight','bold')
                         .attr('font-size',font_size)
-                .text('CALLER (Related)')
+                .text('Caller')
             that.drawSlotContents(legend_G,content_x,y_cursor,that.actSize['SLOT'],'CALLER')
-            that.drawSlotContents(legend_G,left+that.actSizeD['PAY']*4,y_cursor,that.actSize['SLOT'],'CALLERxxx')
+            that.drawSlotContents(legend_G,content_x+that.actSizeD['PAY']*3,y_cursor,that.actSize['SLOT'],'CALLERxxx')
 
         },
         drawBrushBar(svg){
@@ -718,6 +730,10 @@ export default {
                     let diff_set2 = diff_res['SAMETO'][2]
                     let h1 = ''
                     let h2 = ''
+                    if(same_to.length==0){
+                        h1 = `<span class="difftext"> ${diff_set1[0]} </span>`
+                        h2 = `<span class="difftext"> ${diff_set2[0]} </span>`
+                    }
                     same_to.forEach((str,idx)=>{
                         if(idx==0){
                             if(diff_set1[idx].length>0){
@@ -772,6 +788,7 @@ export default {
                     html += `<span><b> VAL: ${diff_res['VAL1']} </b></span><br>`
                 }
                 d3.select('div.diff').append('p').html(html)
+                console.log(html)
             }
             d3.select('div.diff').attr('style',`transform:translate(${parseInt(loc[0])+20}px,${parseInt(loc[1])-20}px);visibility:visible;z-index:2`)
         },
@@ -818,11 +835,12 @@ export default {
                     'VAL1':act1[val_idx].toString().replaceAll(' ',''),
                     'VAL2':act2[val_idx].toString().replaceAll(' ',''),
                 }
-
                 if(act1[slot_idx]!=act2[slot_idx]){
                     diffcheck = true
                     compare_content['TOCHECK'] = true
-                    let res = this.compareAndFindDifference(act1[slot_idx].toString().replaceAll(' ',''),act2[slot_idx].toString().replaceAll(' ',''))
+                    // console.log(compare_content,JSON.parse(JSON.stringify(compare_content)))
+                    let res = this.compareAndFindDifference(compare_content['TO1'],compare_content['TO2'])
+                    console.log('here',res);
                     compare_content['SAMETO'] = res
                 }
                 if(act1[val_idx]!=act2[val_idx]){
@@ -868,6 +886,7 @@ export default {
                     compare_content['SAMEVAL'] = res
                 }
             }
+
             return [diffcheck,compare_content]
         },
         storageLayout(path_list,storage,Paths_Data){
@@ -877,6 +896,7 @@ export default {
             slots.forEach(item=>{
                 Store_Stat[item] = []
             })
+            // console.log(slots)
             let max_content_number = 0
             path_list.forEach((pid,p_idx)=>{
                     let data = Paths_Data[pid]
@@ -918,6 +938,7 @@ export default {
             return [new_order,max_content_number]
         },
         drawStorage(store_G,svg_width,svg_height,y1,y2,data,storage,Action_Loc,new_order,max_number,shift){
+            // console.log(new_order)
             let that = this
             //sorted_actions
             let sorted_actions = data['sorted_actions']
@@ -961,18 +982,19 @@ export default {
             that.caller_slot = []
             sorted_actions.forEach((act,idx)=>{
                 if(act[0]=='WRITE'){
+                    // console.log(act[5],act[5].toString())
                     if(act[5] in slots_written){
                         slots_written[act[5]] += 1
                     }else{
                         slots_written[act[5]] = 0
                     }
-
+                    // console.log(slots_written)
                     let max_r = 0.5 * ( y2 - storage_y - that.actSizeD['SLOT']) / max_number
                     let slot_idx = slots_written[parseInt(act[5])]
                     let content_y = storage_y + 1.1*that.actSizeD['SLOT']+ (slot_idx+0.5)* 1.9 * max_r 
                     let s_idx = new_order.indexOf(act[5].toString())
                     let content_x = x_scale(s_idx)+0.5*that.actSizeD['SLOT']
-
+                    // console.log(content_x,s_idx)
 
                     let path = `M${Action_Loc[idx].x} ${Action_Loc[idx].y} V${control_y1}`
                     if(content_x>Action_Loc[idx].x){
@@ -1231,7 +1253,7 @@ export default {
                     act_G.append('path')
                         .attr("d",pathData[0]).attr('fill','none').attr("stroke-width",that.actSizeD['LINE']).attr('stroke',that.actColor['LINE'])
                     act_G.append('path')
-                        .attr("d",pathData[1]).attr('fill','none').attr("stroke-width",that.actSizeD['LINE']).attr('stroke','black')
+                        .attr("d",pathData[1]).attr('fill','none').attr("stroke-width",that.actSizeD['LINE']).attr('stroke',that.actColor['LINE'])
                 })
                 // draw the  last line
                 act_G.append("line")
@@ -1347,7 +1369,7 @@ export default {
         },
         dataInit(data){
             let Paths_Data = {}
-            // console.log(data)
+            console.log(data)
             Object.keys(data).forEach((key,idx)=>{
                 if(key!='storage'){
                     let check = true
@@ -1422,26 +1444,37 @@ export default {
                     let start_idx = 0
                     let none_loop_segments = []
                     let loop_segments = []
-                    let first_ins_idx = 0
-                    // console.log(pid,actions)
+                    let first_ins_idx = []
+                    // console.log(pid,actions,loop_point)
                     actions.forEach((item,idx)=>{
+                        // console.log(item[1],item[3],flag,finish,first_ins_idx,p_index)
                         if(flag==0 && item[1] == loop_point[p_index]){ //first reach loop point
+                            // console.log('1')
                             flag = 1
                             let seg = actions.slice(start_idx,idx)
                             none_loop_segments.push(['none',start_idx,idx, seg.length, seg])
                             start_idx = idx
-                            first_ins_idx = item[3]
-                        }else if(flag==1 && item[1] != loop_point[p_index]){ //judgement of whether pass the loop point
+                            first_ins_idx.push(item[3])
+                        }else if(finish == false && flag==1 && item[1] == loop_point[p_index] && !first_ins_idx.includes(item[3])){
+                            // console.log('2')
+                            first_ins_idx.push(item[3])
+                        }else if(finish == false && flag==1 && item[1] != loop_point[p_index]){ //judgement of whether pass the loop point
+                            // console.log('3')
                             finish = true
                         }else if(finish==true && flag==1 && item[1] == loop_point[p_index]){// segment of the round  2 of loop
+                            // console.log('4')
                             let seg = actions.slice(start_idx,idx)
                             loop_segments.push([p_index,start_idx, idx, seg.length, seg])
                             flag = 2
                             finish = false
                             start_idx = idx
+                        // }else if(flag==2 && finish==false && item[1] == loop_point[p_index]){
+                            
                         }else if(flag==2 && finish==false && item[1] != loop_point[p_index]){ //judgement of whetehr pass the second loop point
+                            // console.log('5')
                             finish = true
                         }else if(flag==2 && finish==true && item[1] == loop_point[p_index]){// 
+                            // console.log('6')
                             let seg = actions.slice(start_idx,idx)
                             loop_segments.push([p_index,start_idx, idx, seg.length, seg])
                             flag = 0
@@ -1449,17 +1482,20 @@ export default {
                             start_idx = idx
                             p_index += 1
                             
-                        }else if(finish == false && item[1]==loop_point[p_index] && item[3]==first_ins_idx){
+                        }
+                        else if(flag == 1 && finish == false && item[1]==loop_point[p_index] && first_ins_idx.includes(item[3])){
+                            // console.log('7')
                             //if loop point is linked together
-                            // console.log(idx,loop_point)
                             let seg = actions.slice(start_idx,idx)
                             loop_segments.push([p_index,start_idx, idx, seg.length, seg])
                             start_idx = idx
+                            flag = 2
                             finish = true
                         }
                     })
                     let seg = actions.slice(start_idx)
                     none_loop_segments.push(['none',start_idx,actions.length, seg.length, seg])
+                    // console.log(loop_segments);
 
                     // fix the bug of cut more than 2 loop data
                     for(let i=0;i<none_loop_segments.length-1;i++){
@@ -1491,6 +1527,7 @@ export default {
                         }
                     }
                     //deal with the different lens of loop
+                    // console.log(loop_segments)
                     let new_loop_segments = []
                     let new_none_loop_segments = []
                     let cursor_difference = 0
@@ -1526,6 +1563,7 @@ export default {
                             new_none_loop_segments = [...new_none_loop_segments,[seg[0], seg[1]+befroe_cursor_diff, seg[2]+cursor_difference, new_seg_acts.length,new_seg_acts]]
                         }
                     })
+                    // console.log(new_loop_segments)
                     Paths_Data[pid]['sorted_actions'] = actions
                     Paths_Data[pid]['loop_segments'] = new_loop_segments
                     Paths_Data[pid]['none_loop_segments'] = new_none_loop_segments
@@ -1627,6 +1665,7 @@ export default {
             let label_len = Object.keys(that.label_idx).length
             let group_len = groups_id.length
             let x_scale = d3.scaleLinear().domain([-0.5,label_len-1]).range([start,end])
+            this.feature_left = x_scale(0)
 
 
             let path_count = d3.sum([...groups_id].map(item=>groups[item].length))
@@ -1778,12 +1817,18 @@ export default {
 
             Object.keys(that.label_idx).forEach((item,idx)=>{
                 let content = item
+                let label_trans = {
+                    'WriteCaller': 'Investing',
+                    'Pay' : 'Payment',
+                    'Loop' : 'Loop',
+                    'PayInvestor' : 'Rewarding',
+                }
                 filter_G.append('text')
                     .attr('x',x_scale(that.label_idx[item])).attr('y',that.margin.top+10)
                     .attr('text-anchor','middle').attr('dominant-baseline','top')
                     .attr('font-family','Arial').attr('font-weight','bold')
                     .attr('font-size',10)
-                    .text(content)
+                    .text(label_trans[content])
             })
 
             that.drawMergePath2(svg,start_parts,groups,this.Paths_Data,end+f_height,width)
@@ -2508,7 +2553,7 @@ export default {
                 //action
                 this.add_action([group_name,x,y,act,paths_set])
             }
-            console.log(this.selected_group_paths)
+            // console.log(this.selected_group_paths)
         },
         remove_group(group_name){
             this.selected_group_paths = [...this.selected_group_paths].filter(item=>item[0]!=group_name.toString())
@@ -2520,8 +2565,7 @@ export default {
                 .attr('stroke-width',2)
         },
         compareAndFindDifference(str1, str2) {
-            const m = str1.length;
-            const n = str2.length;
+            // console.log(str1,str2)
             let stop = true
             let new_str1 = str1
             let new_str2 = str2
@@ -2530,15 +2574,20 @@ export default {
             let diff_set2 = []
             while(stop){
                 let res = this.findLongestSubstring(new_str1,new_str2)
-                same_set.push(res)
-                let s1 = new_str1.split(res)
-                let s2 = new_str2.split(res)
-                diff_set1.push(s1[0])
-                diff_set2.push(s2[0])
-                new_str1 = s1[1]
-                new_str2 = s2[1]
+                if(res!=false){
+                    same_set.push(res)
+                    let s1 = new_str1.split(res)
+                    let s2 = new_str2.split(res)
+                    diff_set1.push(s1[0])
+                    diff_set2.push(s2[0])
+                    new_str1 = s1[1]
+                    new_str2 = s2[1]
+                    // console.log(res)
 
-                if(new_str1.length<1 | new_str2.length<1){
+                    if(new_str1.length<1 | new_str2.length<1){
+                        stop = false
+                    }
+                }else{
                     stop = false
                 }
             }
@@ -2551,8 +2600,6 @@ export default {
             const n = str2.length;
             let maxLength = 0; // 最长公共子串的长度
             let endIndex = 0; // 最长公共子串的结束索引
-            let end1 = 1 
-            let end2 = 0 
             // 创建一个二维数组来存储公共子串的长度
             const dp = new Array(m + 1).fill(0).map(() => new Array(n + 1).fill(0));
 
@@ -2573,8 +2620,11 @@ export default {
 
             // 根据最长公共子串的长度和结束索引提取出最长公共子串
             const longestCommonSubstring = str1.substring(endIndex - maxLength + 1, endIndex + 1);
-
-            return longestCommonSubstring;
+            if(longestCommonSubstring){
+                return longestCommonSubstring;
+            }else{
+                return false
+            }
         },
         // drawMergePath(svg,start_parts,groups,Paths_Data,start,width){
         //     console.log(start_parts,groups,Paths_Data)
@@ -3376,7 +3426,7 @@ export default {
                     text.push(`#${d[5]}-${d[6]} (${d[4]})`)
                     text.push(`${d[7]}`)
                 }else{
-                    text[0] = `${d[0]}  ->  SLOT #${d[5]}`
+                    text[0] = `${d[0]}  ->  SLOT #${d[5].toString()}`
                     text.push(`${d[6]}`)
                 }
             }else if(d[0]=='CONS'){
