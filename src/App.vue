@@ -1,12 +1,12 @@
 <script setup>
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup
-import PonziLens from './components/PonziLens.vue' 
+import SmartContract from './components/SmartContract.vue' 
 // import {GridProps} from "naive-ui"
 </script>
 
 <template>
-  <ponzi-lens/>
+  <SmartContract />
   <!-- <hello-world/> -->
 </template>
 
